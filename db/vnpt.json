@@ -1,0 +1,77 @@
+[
+  {
+    "id": 1,
+    "name": "Server 1",
+    "country": [
+      {
+        "name": "Vietnamese",
+        "code": "vi",
+        "voices": [
+          {
+            "name": "Voice 1",
+            "code": "vi-VN-Wavenet-C|servicegoo",
+            "gender": "female",
+            "link_demo": "https://ntstool.com/wp-content/uploads/2023/07/vi-VNservicebin.wav"
+          },
+          {
+            "name": "Voice 2",
+            "code": "vi-VN-Neural2-A|servicegoo",
+            "gender": "male",
+            "link_demo": "https://ntstool.com/wp-content/uploads/2023/07/vi-VNservicebin.wav"
+          }
+        ]
+      },
+      {
+        "name": "English",
+        "code": "en",
+        "voices": [
+          {
+            "name": "Voice 3",
+            "code": "vi-VN-Wavenet-C|servicegoo",
+            "gender": "female",
+            "link_demo": "https://ntstool.com/wp-content/uploads/2023/07/vi-VNservicebin.wav"
+          }
+        ]
+      }
+    ]
+  },	#tts_multinational_1
+	mmmd={
+
+	},
+  {
+    "id": 2,
+    "name": "Server 2",
+    "country": [
+      {
+        "name": "Vietnamese",
+        "code": "vi",
+        "voices": [
+          {
+            "name": "Voice 3",
+            "code": "vi-VN-Wavenet-C|servicegoo",
+            "gender": "male",
+            "link_demo": "https://ntstool.com/wp-content/uploads/2023/07/vi-VNservicebin.wav"
+          },
+          {
+            "name": "Voice 4",
+            "gender": "male",
+            "code": "vi-VN-Neural2-A|servicegoo",
+            "link_demo": "https://ntstool.com/wp-content/uploads/2023/07/vi-VNservicebin.wav"
+          }
+        ]
+      },
+      {
+        "name": "English",
+        "code": "en",
+        "voices": [
+          {
+            "name": "Voice 5",
+            "code": "vi-VN-Wavenet-C|servicegoo",
+            "gender": "female",
+            "link_demo": "https://ntstool.com/wp-content/uploads/2023/07/vi-VNservicebin.wav"
+          }
+        ]
+      }
+    ]
+  }
+]

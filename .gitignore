@@ -1,0 +1,46 @@
+# Dependency directories
+bin/
+dist/
+build/
+logs/
+ffsub/
+test/
+browsers/
+profile/
+storages/
+zzvoice/
+zvoice/
+
+
+
+# Optional eslint cache
+.idea
+__pycache__
+# Output of 'npm pack'
+*.mov
+*.mp4
+*.flv
+*.txt
+*.rar
+*.zip
+*.tar
+*.onnx
+
+
+*.7z
+*.wav
+*.flac
+*.srt
+*.exe
+*.mp3
+*.wmv
+*.mkv
+*.tif
+*.pth
+# Yarn Integrity file
+
+
+Dockerfile.dev
+
+# dotenv environment variables file
+.env
