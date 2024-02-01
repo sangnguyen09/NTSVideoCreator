@@ -181,8 +181,8 @@ class TableTimeline(QWidget):
                                                   shortcut=QKeySequence(Qt.CTRL | Qt.Key_G))  # (QAction('test'))
         self.act_select_all = self.menu.addAction("Select All", lambda: self.main_table.selectAll(),
                                                   shortcut=QKeySequence(Qt.CTRL | Qt.Key_A))  # (QAction('test'))
-        self.act_select_all = self.menu.addAction("Select Option", self.signal_option,
-                                                  shortcut=QKeySequence(Qt.CTRL | Qt.Key_O))  # (QAction('test'))
+        # self.act_select_all = self.menu.addAction("Select Option", self.signal_option,
+        #                                           shortcut=QKeySequence(Qt.CTRL | Qt.Key_O))  # (QAction('test'))
         self.menu.addAction("Check Độ Lệch Time", self.checkDoLechPart, shortcut=QKeySequence(Qt.CTRL | Qt.Key_S))
         # self.menu.addAction("Rút Gọn Nội Dung", self.signal_summary, shortcut=QKeySequence(Qt.CTRL | Qt.Key_R))
 
@@ -220,8 +220,8 @@ class TableTimeline(QWidget):
                     return PyMessageBox().show_warning('Cảnh Báo', "Chỉ được GET VOICE các hàng liền nhau")
             row_pre = item.row()
 
-            AC, Ratio, Time, Text = self.getDataRow(item.row())
-            data.append([AC, Ratio, Time, Text])
+            AC, Text = self.getDataRow(item.row())
+            data.append([AC, Text])
             list_rows.append(item.row())
         self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, True)
 
@@ -240,30 +240,30 @@ class TableTimeline(QWidget):
                     return PyMessageBox().show_warning('Cảnh Báo', "Chỉ được XEM TRƯỚC các hàng liền nhau")
             row_pre = item.row()
 
-            AC, Ratio, Time, Text = self.getDataRow(item.row())
-            data.append([AC, Ratio, Time, Text])
+            AC, Text = self.getDataRow(item.row())
+            data.append([AC,  Text])
 
         self.manage_thread_pool.resultChanged.emit(PREVIEW_PRE_RENDER, PREVIEW_PRE_RENDER, data)
 
-    def signal_option(self):
-        # print(self.getDataSub())
-        dialog = PyDialogSelectOption("Select Dòng Sub Theo Độ Lệch", "Chọn Màu Của Sub Muốn Select",
-                                      LIST_COLOR_NAME_DO_LECH, height=120)
-
-        if dialog.exec():
-            list_row_select = []
-            for row, sub in enumerate(self.getDataSub()):
-                AC, Ratio, Time, Text = sub
-                try:
-                    dl = float(Ratio.replace(" lần", ""))
-                    if get_index_name_do_lech_sub(dl) == dialog.getIndex():
-                        list_row_select.append(row)
-                except:
-                    return PyMessageBox().show_warning("Thông báo", "Bạn chưa Bấm nút CHECK ĐỘ LỆCH")
-            if len(list_row_select) > 0:
-                self.selectListRow(list_row_select)
-            else:
-                return PyMessageBox().show_warning("Thông báo", "Không có dòng nào có màu bạn đã chọn")
+    # def signal_option(self):
+    #     # print(self.getDataSub())
+    #     dialog = PyDialogSelectOption("Select Dòng Sub Theo Độ Lệch", "Chọn Màu Của Sub Muốn Select",
+    #                                   LIST_COLOR_NAME_DO_LECH, height=120)
+    #
+    #     if dialog.exec():
+    #         list_row_select = []
+    #         for row, sub in enumerate(self.getDataSub()):
+    #             AC, Text = sub
+    #             try:
+    #                 dl = float(Ratio.replace(" lần", ""))
+    #                 if get_index_name_do_lech_sub(dl) == dialog.getIndex():
+    #                     list_row_select.append(row)
+    #             except:
+    #                 return PyMessageBox().show_warning("Thông báo", "Bạn chưa Bấm nút CHECK ĐỘ LỆCH")
+    #         if len(list_row_select) > 0:
+    #             self.selectListRow(list_row_select)
+    #         else:
+    #             return PyMessageBox().show_warning("Thông báo", "Không có dòng nào có màu bạn đã chọn")
 
     def signal_find_replace(self):
         # print(self.getDataSub())
@@ -478,16 +478,16 @@ class TableTimeline(QWidget):
         for index, item in enumerate(items_selected):
             self.listRowTransPart.append(item.row())
             # ("Ratio", "Time", "Pos Ori", "Original", "Translation", "Pos Trans")
-            AC, Ratio, Time, Text = self.getDataRow(item.row())
+            AC, Text = self.getDataRow(item.row())
 
-            data.append([AC, Ratio, Time, Text])
+            data.append([AC, Text])
         self.manage_thread_pool.resultChanged.emit(TRANSLATE_SUB_PART, TRANSLATE_SUB_PART, data)
 
     def setup_table(self):
         # ========== Cài đặt cho table============
         # self.main_table.setColumnCount(6)  # số lượng cột
-        data = [["", "", "", ""]]
-        name_column = ["Action", "Ratio", "Time", "Text"]
+        data = [["", ""]]
+        name_column = ["Action","Text"]
         self.model = TableAddModel(data, name_column)
 
         self.main_table.setModel(self.model)
@@ -518,10 +518,10 @@ class TableTimeline(QWidget):
 
         # ------------------------ Set FIxed tiêu đề ko cho di chuyển
 
-        self.main_table.horizontalHeader().setSectionResizeMode(ColumnNumber.column_do_lech.value,
-                                                                QHeaderView.ResizeMode.ResizeToContents)  # gian cách vừa với content
-        self.main_table.horizontalHeader().setSectionResizeMode(ColumnNumber.column_time.value,
-                                                                QHeaderView.ResizeMode.ResizeToContents)  # gian cách vừa với content
+        # self.main_table.horizontalHeader().setSectionResizeMode(ColumnNumber.column_do_lech.value,
+        #                                                         QHeaderView.ResizeMode.ResizeToContents)  # gian cách vừa với content
+        # self.main_table.horizontalHeader().setSectionResizeMode(ColumnNumber.column_time.value,
+        #                                                         QHeaderView.ResizeMode.ResizeToContents)  # gian cách vừa với content
 
         self.main_table.horizontalHeader().setSectionResizeMode(ColumnNumber.column_chuc_nang.value,
                                                                 QHeaderView.ResizeMode.ResizeToContents)  # gian cách vừa với content
@@ -641,16 +641,15 @@ class TableTimeline(QWidget):
         list_data_origin = []
         # ["Ratio", "Time", "Text"]
         # print(data)
-        # return
         if len(data.get('data_table', [])) > 0:
             for indx, item in enumerate(data.get('data_table')):
                 # item = [ time_, orgin, trans]
-                time_, orgin, trans = item
+                file_image, orgin, trans = item
                 text = trans
                 if data.get('sub_hien_thi', 'origin') == 'origin':
                     text = orgin
-                list_data.append(["PREVIEW", "", time_, text])
-                list_data_origin.append(["PREVIEW", "", time_, text])
+                list_data.append([file_image, text])
+                list_data_origin.append([file_image, text])
             # print(list_data)
             # self.main_table.setRo
             self.data_sub_origin = list_data_origin
@@ -944,12 +943,12 @@ class TableTimeline(QWidget):
 
         if typeThread == THAY_THE_SUB_NEU_SUB_CO_DO_LECH_LON:
             ind_row, data = result
-            time_line, text_sub = data
+            text_sub = data
 
             column = ColumnNumber.column_sub_text.value
 
             self.setValueItem(ind_row, column, text_sub)
-            self.setValueItem(ind_row, ColumnNumber.column_time.value, time_line)
+            # self.setValueItem(ind_row, ColumnNumber.column_time.value, time_line)
 
         if typeThread == THEM_KY_TU_NEU_SUB_CO_HAI_KYTU:
             ind_row, char = result
@@ -1124,9 +1123,9 @@ class TableTimeline(QWidget):
         for index, item in enumerate(items_selected):
             self.listRowCheckDoLechPart.append(item.row())
 
-            ac, ratio, time_, text = self.getDataRow(item.row())
+            ac,  text = self.getDataRow(item.row())
 
-            data.append([ac, ratio, time_, text])
+            data.append([ac, text])
         # print(data)
         self.manage_thread_pool.resultChanged.emit(CHECK_DO_LECH_TABLE_CHANGED_PART, CHECK_DO_LECH_TABLE_CHANGED_PART,
                                                    data)
@@ -1139,10 +1138,10 @@ class TableTimeline(QWidget):
             # data.append([])
             # for column in range(self.model.columnCount()):
 
-            ac, ratio, time_, text = self.getDataRow(row)
+            ac, text = self.getDataRow(row)
             # print(time, sub_origin, sub_translate, dolech, pos_ori, pos_trans)
             # data.append([time, sub_origin, sub_translate, pos_ori, pos_trans])
-            data.append([ac, ratio, time_, text])
+            data.append([ac, text])
         return data
 
     # def deleteRow (self, row):
@@ -1164,8 +1163,8 @@ class TableTimeline(QWidget):
         """:return (ac, ratio, time_, text)"""
 
         # """:return [AC,Ratio, Time,  Text]"""
-        data = list(self.getValueItem(row, i) for i in range(self.model.columnCount()))
-        return data
+        # data = list(self.getValueItem(row, i) for i in range(self.model.columnCount()))
+        return self.model.getData()[row]
 
     def addDataRow(self, row, data):
         """data: AC,Ratio, Time,  Text"""
@@ -1176,15 +1175,15 @@ class TableTimeline(QWidget):
     def getRandomTextSub(self):
 
         rad = random.randrange(0, self.model.rowCount() - 1)
-        ac, ratio, time_, text = self.getDataRow(rad)
+        ac,   text = self.getDataRow(rad)
         return text, rad
 
     def getDataRowCurrent(self):
-        """AC,Ratio, Time,  Text"""
+        """AC,  Text"""
 
         # """:return [time, sub_origin, sub_translate,do_lech, pos_ori, pos_trans]"""
-        data = list(self.getValueItem(self.main_table.currentIndex().row(), i) for i in range(self.model.columnCount()))
-        return data
+        # data = list(self.getValueItem(self.main_table.currentIndex().row(), i) for i in range(self.model.columnCount()))
+        return self.model.getData()[self.main_table.currentIndex().row()]
 
     def resetDataOrigin(self):
         # print(self.data_sub_origin)

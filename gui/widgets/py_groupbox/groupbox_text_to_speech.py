@@ -105,7 +105,7 @@ class GroupBoxTextToSpeech(QWidget):
 	
 	def create_widgets (self):
 		self.groupbox = QGroupBox("Lồng Tiếng Và Thuyết Minh")
-		self.groupbox.setCheckable(True)
+		# self.groupbox.setCheckable(True)
 		
 		self.cbox_server = PyComboBox()
 		# self.tab_texttospeech = QTabWidget()

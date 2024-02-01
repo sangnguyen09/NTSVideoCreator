@@ -14,10 +14,9 @@ class ColumnNumberTabEdit(Enum):
 
 class ColumnNumber(Enum):
     column_chuc_nang = 0
-    column_do_lech = 1
-    column_time = 2
-    column_sub_text = 3
-
+    # column_do_lech = 1
+    # column_time = 2
+    column_sub_text = 1
 
 class TableAddModel(QAbstractTableModel):
     def __init__(self, data, name_column):
@@ -98,7 +97,7 @@ class TableAddModel(QAbstractTableModel):
 
         self.beginInsertRows(QModelIndex(), position, position + rows - 1)
         for row in range(rows):
-            self.__data.insert(position + row, ["", "", "", "", "", ""])
+            self.__data.insert(position + row, ["", ""])
         # self.added += 1
         self.endInsertRows()
         return True
@@ -148,7 +147,8 @@ class TableAddModel(QAbstractTableModel):
                         return QColor("#6eff0d")
                 except:
                     pass
-
+    def getData(self):
+        return self.__data
     def rowCount(self, parent=QModelIndex()):
         # The length of the outer list.
         return len(self.__data)

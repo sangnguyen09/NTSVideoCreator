@@ -19,12 +19,12 @@ QLabel{{
 
 
 class PyDialogThoiGianSub(QDialog):
-	def __init__ (self, text, title, time_line, text_sub, width=400, height=600, ):
+	def __init__ (self, text, title,   text_sub, width=400, height=600, ):
 		super().__init__()
 		# LOAD SETTINGS
 		# ///////////////////////////////////////////////////////////////
 		self.message = text
-		self.time_line = time_line
+		# self.time_line = time_line
 		self.text_sub = text_sub
 		
 		self.setMinimumWidth(width)
@@ -79,8 +79,8 @@ class PyDialogThoiGianSub(QDialog):
 		self.input_text = QLineEdit()
 		self.input_text.setText(self.text_sub)
 		
-		self.input_time = QLineEdit()
-		self.input_time.setText(self.time_line)
+		# self.input_time = QLineEdit()
+		# self.input_time.setText(self.time_line)
 	
 	def modify_widgets (self):
 		self.messagearea_info.appendPlainText(self.message)
@@ -108,8 +108,8 @@ class PyDialogThoiGianSub(QDialog):
 		self.content_layout.addWidget(self.messagearea_info)
 		self.content_layout.addWidget(QLabel())
 
-		self.content_layout.addWidget(QLabel("Timeline:"))
-		self.content_layout.addWidget(self.input_time)
+		# self.content_layout.addWidget(QLabel("Timeline:"))
+		# self.content_layout.addWidget(self.input_time)
 		
 		self.content_layout.addWidget(QLabel())
 		self.content_layout.addWidget(QLabel("Content:"))
@@ -157,4 +157,4 @@ class PyDialogThoiGianSub(QDialog):
 		self.accept()
 	
 	def getValue (self):
-		return (self.input_time.text(), self.input_text.text())
+		return  self.input_text.text()

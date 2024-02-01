@@ -33,14 +33,17 @@ class PlainTextEdit(QPlainTextEdit):
 
     def keyPressEvent(self, event):
 
+        if event.key() in (Qt.Key_Return, Qt.Key_Enter):
+            # print('Key_Enter')
+            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_NEXT_LINE_SUB, ACTION_PRESS_NEXT_LINE_SUB, "")
+            return
+
         if event.modifiers() & Qt.ControlModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Up:
-            print('UP')
+            # print('UP')
             self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_PREVIOUS_LINE_SUB, ACTION_PRESS_PREVIOUS_LINE_SUB,
                                                        "")
-
-
         elif event.modifiers() & Qt.ControlModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Down:
-            print('Key_Down')
+            # print('Key_Down')
             self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_NEXT_LINE_SUB, ACTION_PRESS_NEXT_LINE_SUB, "")
 
         super(PlainTextEdit, self).keyPressEvent(event)

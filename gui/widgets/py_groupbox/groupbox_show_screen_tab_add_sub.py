@@ -349,46 +349,58 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 	# 	print("Không crop frame blur")
 	
 	def loadFrameVideo (self, line_number):
-		self.sequence_current = self.groupbox_timeline.getDataRow(line_number - 1)
-		AC, Ratio, time_, content_ = self.sequence_current
-		# print(AC, Ratio, time_, content_)
-		# print(AC, Ratio, time_, content_)
-		if hasattr(self, 'fileSRTCurrent') and hasattr(self,'video_cap') and self.video_cap and os.path.isfile(self.path_video) and time_ != '':
-			# if self.is_loaded is False: AC,Ratio, Time,  Text
-			# sequence = self.sequences[line_number - 1]
-			# with VideoCapture(self.path_video) as video_cap:
-				# print(time_)
-				# manage_thread.progressChanged.emit(UPDATE_VALUE_PROGRESS_GET_FRAME_IMAGE,id_worker,count + 1)
-			start = time_.split(' --> ')[0]
-			end = time_.split(' --> ')[1]
-			start = self.strFloatTime(start)
-			end = self.strFloatTime(end)
-			(start, end) = map(float, (start, end))
-			span = (end + start) / 2
-			self.video_cap.set(cv2.CAP_PROP_POS_MSEC, span * 1000)
-			frame_height = self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-			frame_width = self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-			(success, frame) = self.video_cap.read()
-			# frame_count = video_cap.get(cv2.CAP_PROP_FRAME_COUNT)
-			# print(success)
-			if success:
-				image_b = cv2.imencode('.png', frame)[1].tobytes()
-				pixmap = self.convertCvImage2QtImage(image_b)
-				self.frame_current = frame
-				# print(pixmap)
-				# self.lb_change_frame_number.setPixmap(pixmap)
-				# cv2.imshow("WindowNameHere", frame)
-				# cv2.waitKey(0)
+		if hasattr(self,'folder_name') and os.path.isdir(self.folder_name):
+				# self.sequence_current = self.groupbox_timeline.getDataRow(line_number - 1)
 				cau_hinh_edit: dict = json.loads(self.fileSRTCurrent.value)
-				
+				# item_current = cau_hinh_edit.get('data_table',[])[line_number-1]
+				self.sequence_current = self.groupbox_timeline.getDataRow(line_number - 1)
+				# print(self.sequence_current)
+				pixmap = QPixmap(self.sequence_current[ColumnNumber.column_chuc_nang.value])
+				frame_width = pixmap.width()
+				frame_height = pixmap.height()
 				self.viewer.setVideoMain(pixmap, frame_width, frame_height, self.video_new)
-				self.loadSubText(content_, cau_hinh_edit.get('pos_add_sub'))
+				self.loadSubText(self.sequence_current[ColumnNumber.column_sub_text.value], cau_hinh_edit.get('pos_add_sub'))
 				self.selectionAreaBlurChanged()
-				# print(111)
- 
-			self.video_new = False
-		
-	
+		# AC, content_ = self.sequence_current
+
+		# print(AC, Ratio, time_, content_)
+		# print(AC, Ratio, time_, content_)
+		# if hasattr(self, 'fileSRTCurrent') and hasattr(self,'video_cap') and self.video_cap and os.path.isfile(self.path_video) and time_ != '':
+		# 	# if self.is_loaded is False: AC,Ratio, Time,  Text
+		# 	# sequence = self.sequences[line_number - 1]
+		# 	# with VideoCapture(self.path_video) as video_cap:
+		# 		# print(time_)
+		# 		# manage_thread.progressChanged.emit(UPDATE_VALUE_PROGRESS_GET_FRAME_IMAGE,id_worker,count + 1)
+		# 	start = time_.split(' --> ')[0]
+		# 	end = time_.split(' --> ')[1]
+		# 	start = self.strFloatTime(start)
+		# 	end = self.strFloatTime(end)
+		# 	(start, end) = map(float, (start, end))
+		# 	span = (end + start) / 2
+		# 	self.video_cap.set(cv2.CAP_PROP_POS_MSEC, span * 1000)
+		# 	frame_height = self.video_cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+		# 	frame_width = self.video_cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+		# 	(success, frame) = self.video_cap.read()
+		# 	# frame_count = video_cap.get(cv2.CAP_PROP_FRAME_COUNT)
+		# 	# print(success)
+		# 	if success:
+		# 		image_b = cv2.imencode('.png', frame)[1].tobytes()
+		# 		pixmap = self.convertCvImage2QtImage(image_b)
+		# 		self.frame_current = frame
+		# 		# print(pixmap)
+		# 		# self.lb_change_frame_number.setPixmap(pixmap)
+		# 		# cv2.imshow("WindowNameHere", frame)
+		# 		# cv2.waitKey(0)
+		# 		cau_hinh_edit: dict = json.loads(self.fileSRTCurrent.value)
+		#
+		# 		self.viewer.setVideoMain(pixmap, frame_width, frame_height, self.video_new)
+		# 		self.loadSubText(content_, cau_hinh_edit.get('pos_add_sub'))
+		# 		self.selectionAreaBlurChanged()
+		# 		# print(111)
+		#
+		# 	self.video_new = False
+		#
+		#
 	
 	# @decorator_try_except_class
 	def loadSubText (self, content, position):
@@ -411,7 +423,12 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 		self.fileSRTCurrent = fileSRTCurrent
 		cau_hinh_edit: dict = json.loads(fileSRTCurrent.value)
 		
-		path_video = cau_hinh_edit.get('video_file')
+		# path_video = cau_hinh_edit.get('video_file')
+		self.folder_name = cau_hinh_edit.get('folder_name')
+
+		if self.folder_name and os.path.isdir(self.folder_name):
+			self.loadFrameVideo(1)
+			self.viewer.isLoaded = False
 		# if os.path.isfile(path_video):
 		# 	self.path_video = path_video
 		# 	if hasattr(self, 'video_cap'):
@@ -442,7 +459,7 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 		if typeThread == ITEM_TABLE_TIMELINE_ADD_SUB_CHANGED or typeThread == ITEM_TABLE_TIMELINE_EDIT_SUB_CHANGED or typeThread == CHANGE_HIEN_THI_SUB or typeThread == CHANGE_STYLE_DIALOG_ADD_SUB:
 			if hasattr(self, 'fileSRTCurrent'):
 				sequence_current = self.groupbox_timeline.getDataRowCurrent()
-				AC, Ratio, time_, content_ = sequence_current
+				AC, content_ = sequence_current
 				cau_hinh_edit: dict = json.loads(self.fileSRTCurrent.value)
 				self.loadSubText(content_, cau_hinh_edit.get('pos_add_sub'))
 			# # self.data_conf = result

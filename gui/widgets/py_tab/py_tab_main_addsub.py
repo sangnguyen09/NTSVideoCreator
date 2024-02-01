@@ -69,7 +69,7 @@ class PyTabAddSub(QWidget):
 		self.list_data_sub_new = {}
 		self.list_data_sub = {}
 		self.list_cau_hinh = {}
-		self.list_path_video = {}
+		self.list_folder_name = {}
 		self.list_count_sub = {}
 		self.list_total_sub = {}
 		self.list_path_audio = {}
@@ -377,123 +377,78 @@ class PyTabAddSub(QWidget):
 					pass
 	
 	def startThread (self):
-		if hasattr(self, 'path_video'):
-			setting_user = self.user_data["list_tool"].get(TOOL_CODE_MAIN)
-			if not 'long_tieng' in setting_user.get("tab", []):
-				return
+		if self.folder_name and os.path.isdir(self.folder_name):
+
 			cau_hinh: dict = json.loads(self.configCurrent.value)
-			
-			if not os.path.isfile(self.path_video):
-				PyMessageBox().show_error('Cảnh Báo', "Không tìm thấy file 'Video' tương ứng!")
-				return
-			
+
 			job_id = uuid.uuid4().hex
 			row_number = self.groupbox_process_render.main_table.rowCount()
 			
 			data_sub = self.groupbox_timeline.getDataSub()
-			
-			is_ok, mes = self.checkaudiovideo(cau_hinh, self.path_video)
-			
-			if is_ok is False:
-				return PyMessageBox().show_error("Lỗi", mes)
-			
-			# self.path_video = path_video
-			if cau_hinh["text_to_speech"] is True:
-				detect_lang = GoogleTranslateV2(manage_thread_pool=self.manage_thread_pool)
-				
-				sub_random = random.choice(data_sub)
-				text_random = sub_random[ColumnNumber.column_sub_text.value]
-				
-				lang_code = cau_hinh["servers_tts"]["language_tts"].split("-")[0]
-				if lang_code != voice_co_san:
-					language_tts = Language(lang_code).in_foreign_languages.get('en')
-					if language_tts == 'Filipino':
-						language_tts = 'Tagalog'
-						lang_code = 'tl'
-					
-					lang_source = detect_lang.language(text_random).result.in_foreign_languages.get('en')
-					#
-					print(lang_code)
-					print(language_tts)
-					print(lang_source)
-					if not lang_source == language_tts:
-						is_ok = PyMessageBox().show_question("Thông báo", "Ngôn ngữ SUB không trùng với ngôn ngữ ĐỌC, Bạn có muốn tiếp tục RENDER ?")
-						if is_ok:
-							pass
-						else:
-							return
-				else:
-					language_tts = "Cosan"
-					lang_code = "vi"
-				self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, True)
-				
-				self.list_data_sub[(row_number)] = data_sub
-				self.list_cau_hinh[(row_number)] = cau_hinh
-				self.list_path_video[(row_number)] = self.path_video + ""
-				self.list_total_sub[(row_number)] = len(data_sub)
-				self.list_count_sub[(row_number)] = 0
-				self.list_sub_fail = {}
-				self.total_character = 0
-				self.check_sub_fail[(row_number)] = False
-				# print(self.check_sub_fail[(row_number)])
-				server_trans = TTSFreeOnlineTranslator(self.manage_thread_pool)
-				# gender = list(GENDER_VOICE_FREE_TTS_ONLINE.get(self.LANGUAGES_CHANGE_CODE.get(lang_code)).keys())[0]
-				gender = list(self.GENDER_VOICE_FREE_TTS_ONLINE.get(lang_code).keys())[0]
-				
-				tab_tts_active = cau_hinh["tab_tts_active"]
-				gender_tts = cau_hinh["servers_tts"]["gender"]
-				ky_tu_toi_thieu = 1
-				if tab_tts_active == TabIndexTTS.FPTAI.value or 'f_' in gender_tts:
-					ky_tu_toi_thieu = 3
-				
-				speed_giong_doc = cau_hinh["speed_giong_doc"]
-				
-				# sequences = [sub[:2] for sub in data_sub]
-				duration_video_main, bit_rate = get_duaration_video(self.path_video)
-				
-				for index, sub in enumerate(data_sub):  # lọc sub vừa với video
-					start, end = sub[ColumnNumber.column_time.value].split(' --> ')
-					start_time = datetime.strptime(start, "%H:%M:%S,%f")
-					end_time = datetime.strptime(end, "%H:%M:%S,%f")
-					if index < len(data_sub) - 1:
-						start_sub_next = datetime.strptime(
-							data_sub[index + 1][ColumnNumber.column_time.value].split(' --> ')[0], "%H:%M:%S,%f")
+
+			detect_lang = GoogleTranslateV2(manage_thread_pool=self.manage_thread_pool)
+
+			sub_random = random.choice(data_sub)
+			text_random = sub_random[ColumnNumber.column_sub_text.value]
+
+			lang_code = cau_hinh["servers_tts"]["language_tts"].split("-")[0]
+			if lang_code != voice_co_san:
+				language_tts = Language(lang_code).in_foreign_languages.get('en')
+				if language_tts == 'Filipino':
+					language_tts = 'Tagalog'
+					lang_code = 'tl'
+
+				lang_source = detect_lang.language(text_random).result.in_foreign_languages.get('en')
+				#
+				print(lang_code)
+				print(language_tts)
+				print(lang_source)
+				if not lang_source == language_tts:
+					is_ok = PyMessageBox().show_question("Thông báo",
+														 "Ngôn ngữ SUB không trùng với ngôn ngữ ĐỌC, Bạn có muốn tiếp tục RENDER ?")
+					if is_ok:
+						pass
 					else:
-						dur_main_time = datetime.strptime(seconds_to_timestamp(duration_video_main, ","), "%H:%M:%S,%f")
-						if (dur_main_time - end_time).total_seconds() > 1:
-							start_sub_next = dur_main_time
-						else:
-							start_sub_next = end_time
-					
-					delta = start_sub_next - start_time
-					seconds_sub = delta.total_seconds()
-					# print(f"Thời gian sub {index + 1}: {seconds_sub}")
-					
-					self.thread_pool_limit_check_error.start(self._funcCheckErrorTTS, "start-render-" + job_id, ADD_TO_PROCESS,
-						so_lan_lech=cau_hinh.get('so_lan_lech'), ky_tu_toi_thieu=ky_tu_toi_thieu, seconds_sub=seconds_sub, speed_giong_doc=speed_giong_doc, row_number=row_number, server_trans=server_trans, index=index, gender=gender, sub=sub, detect_lang=detect_lang, language_tts=language_tts)
-			
+						return
 			else:
-				# self.manage_thread_pool.start(self._funcStartNoTTS, "start-render-" + job_id, ADD_TO_PROCESS,
-				# 	row_number=row_number, data_sub=data_sub,cau_hinh=cau_hinh, path_video=path_video)
-				filters = self.groupBox_showscreen.viewer.list_fonts, self.groupBox_showscreen.viewer.list_blur, self.groupBox_showscreen.viewer.layers
-				src_subtitle = self.src_subtitle + ''
-				# thêm vào bảng
-				'''Sau khi thêm vào bảng thì trả về số dòng đó để trong các thread push status cho đúng'''
-				data_item_table = []
-				data_item_table.append(cau_hinh['src_output'])
-				self.manage_thread_pool.resultChanged.emit(ADD_TO_TABLE_PROCESS, ADD_TO_TABLE_PROCESS, data_item_table)
-				
-				cau_hinh_edit = json.loads(self.fileSRTCurrent.value)
-				pos_add_sub = cau_hinh_edit.get('pos_add_sub')
-				self.manage_thread_pool.resultChanged.emit("start-render-" + job_id, VIDEO_RENDER_NOT_TTS, (
-					self.path_video + "", filters, row_number, src_subtitle, cau_hinh, data_sub, pos_add_sub))
-				
-				self.list_worker_tts[(row_number)] = self.path_video + ""
+				language_tts = "Cosan"
+				lang_code = "vi"
+			self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, True)
+
+			self.list_data_sub[(row_number)] = data_sub
+			self.list_cau_hinh[(row_number)] = cau_hinh
+			self.list_folder_name[(row_number)] = self.folder_name + ""
+			self.list_total_sub[(row_number)] = len(data_sub)
+			self.list_count_sub[(row_number)] = 0
+			self.list_sub_fail = {}
+			self.total_character = 0
+			self.check_sub_fail[(row_number)] = False
+			# print(self.check_sub_fail[(row_number)])
+
+			tab_tts_active = cau_hinh["tab_tts_active"]
+			gender_tts = cau_hinh["servers_tts"]["gender"]
+			ky_tu_toi_thieu = 1
+			if tab_tts_active == TabIndexTTS.FPTAI.value or 'f_' in gender_tts:
+				ky_tu_toi_thieu = 3
+
+			speed_giong_doc = cau_hinh["speed_giong_doc"]
+
+
+
+			for index, sub in enumerate(data_sub):  # lọc sub vừa với video
+
+				self.thread_pool_limit_check_error.start(self._funcCheckErrorTTS, "start-render-" + job_id,
+														 ADD_TO_PROCESS,
+														 ky_tu_toi_thieu=ky_tu_toi_thieu,
+														 row_number=row_number,
+														   index=index,   sub=sub,
+														 detect_lang=detect_lang, language_tts=language_tts)
+
 			self.btn_restart.setDisabled(False)
 			
 			self.setDisabledButton(True)
 		else:
-			PyMessageBox().show_error('Cảnh Báo', "Không tìm thấy file 'Video' tương ứng!")
+			PyMessageBox().show_error('Cảnh Báo', "Không tìm thấy folder image!")
 	
 	def _funcCheckErrorTTS (self, **kwargs):
 		id_worker = kwargs["id_worker"]
@@ -502,15 +457,8 @@ class PyTabAddSub(QWidget):
 		language_tts = kwargs["language_tts"]
 		detect_lang = kwargs["detect_lang"]
 		ky_tu_toi_thieu = kwargs["ky_tu_toi_thieu"]
-		server_trans = kwargs["server_trans"]
 		index = kwargs["index"]
 		sub = kwargs["sub"]
-		gender = kwargs["gender"]
-		speed_giong_doc = kwargs["speed_giong_doc"]
-		seconds_sub = kwargs["seconds_sub"]
-		so_lan_lech = 8 if kwargs.get("so_lan_lech") is None else kwargs.get("so_lan_lech")
-		time_line = sub[ColumnNumber.column_time.value]
-		
 		text = ''
 		
 		if self.check_sub_fail[(row_number)]:
@@ -520,110 +468,19 @@ class PyTabAddSub(QWidget):
 		if len(text) < ky_tu_toi_thieu:
 			return False, row_number, (
 				"ERROR-TYPE-1\n- Dòng sub số {index} có nội dung dưới " + str(ky_tu_toi_thieu) + " ký tự\n- Bấm THAY THẾ để thay lại nội dung\n- Bấm SAVE để tự động thêm dấu chấm cho đủ " + str(ky_tu_toi_thieu) + " ký tự\n- Bấm DELETE để xóa",
-				index, time_line, text)
+				index,  text)
 		
-		if text[0] in '''.,;'"！.]:()·、>/\\{}，：".·-.*=（)^%#@【[''':
+		if text[0] in '''.,;'"！.]:()·、>/\\{}，：".·-.*=（)^%#@?$&|\<+!【[''':
 			return False, row_number, (
 				"ERROR-TYPE-1\n- Dòng sub số {index} có ký tự đặc biệt\n- Bấm THAY THẾ để thay lại nội dung\n- Bấm DELETE để xóa",
-				index, time_line, text)
+				index,  text)
 		
 		# KIỂM TRA KÝ TỰ
 		if len(text) > 500:
 			return False, row_number, (
 				"ERROR-TYPE-1\n- Dòng sub số {index} có nội dung " + f"{len(text)} ký tự, Quá mức cho phép" + "\n- Vui lòng chỉnh sửa dòng sub dưới 500 ký tự",
-				index, time_line, text)
-		
-		# KIỂM TRA THỜI GIAN
-		# print(index)
-		# print(time)
-		duration = 1
-		try:
-			start_time = datetime.strptime(time_line.split(' --> ')[0], "%H:%M:%S,%f")
-			end_time = datetime.strptime(time_line.split(' --> ')[1], "%H:%M:%S,%f")
-			duration = (end_time - start_time).total_seconds()
-			if duration < 0:
-				return False, row_number, (
-					'ERROR-TYPE-1\nDòng sub số {index} có thời gian bị sai.', index, time_line, text)
-		
-		except:
-			return False, row_number, (
-				'ERROR-TYPE-1\nDòng sub số {index} có thời gian bị sai.', index, time_line, text)
-		
-		if seconds_sub <= 0:
-			sub = self.groupbox_timeline.getDataRow(index + 1)
-			text = sub[ColumnNumber.column_sub_text.value]
-			
-			time_line = sub[ColumnNumber.column_time.value]
-			return False, row_number, (
-				'ERROR-TYPE-1\nDòng sub số {index} có thời gian bị sai.', index + 1, time_line, text)
-		
-		if seconds_sub < 1:
-			# print("Sub nhỏ hơn 0",index + 1)
-			text_trans = server_trans.text_to_speech(text, gender=gender)
-			
-			folder_temp = tempfile.mkdtemp(dir=PATH_TEMP)
-			
-			while True:
-				if check_exsist_app(folder_temp):
-					if os.path.exists(folder_temp):
-						remove_dir(folder_temp)
-					folder_temp = tempfile.mkdtemp(dir=PATH_TEMP)
-				else:
-					break
-			file_temp = JOIN_PATH(folder_temp, str(index + 1) + "_temp.wav")
-			# file_temp2 = JOIN_PATH(folder_temp, str(row_number) + "_temp2.wav")
-			# file_speed = JOIN_PATH(folder_temp, str(row_number) + "_speed.wav")
-			# file_pitch = JOIN_PATH(folder_temp, str(row_number) + "_pitch.wav")
-			file_out = JOIN_PATH(folder_temp, str(index + 1) + "out.wav")
-			
-			if not text_trans.result is None:
-				text_trans.write_to_file(file_temp)
-				
-				code_ff = f'ffmpeg -i "{file_temp}" -acodec pcm_s16le -ac 1 -ar 16000 -y "{file_out}"'
-				self.manage_cmd.cmd_output(code_ff, str(row_number) + TRIM_AUDIO_SLICE + str(index), TRIM_AUDIO_SLICE)
-				# print(speed_giong_doc)
-				if not os.path.exists(file_out):
-					if os.path.exists(folder_temp):
-						remove_dir(folder_temp)
-					return False, row_number, (
-						"ERROR-TYPE-1\n- Dòng sub số {index} không thể chuyển voice.", index, time_line, text)
-				
-				duration_voice, bitrate = get_duaration_video(file_out)
-				sp = (speed_giong_doc / 10)
-				if not sp == 1:
-					if sp == 0:
-						sp = 0.00001
-					duration_voice = duration_voice / sp
-				
-				tempo = duration_voice / duration
-				
-				if tempo < 0:
-					mess = "ERROR-TYPE-2\n"
-					mess += "- Dòng sub số {index} có thời gian bị sai.\n"
-					mess += f"- Bạn hãy kiểm tra lại thời gian bắt đầu và kết thúc\n\n"
-					# mess += f"- NỘI DUNG: {text}\n"
-					mess += f"- THỜI GIAN SUB: {duration} giây\n"
-					mess += f"- THỜI GIAN VOICE: {duration_voice} giây\n"
-					mess += f"- Nó lệch {round(tempo, 2)} lần thời gian của voice.\n"
-					if os.path.exists(folder_temp):
-						remove_dir(folder_temp)
-					return False, row_number, (mess, index, time_line, text)
-				if tempo > so_lan_lech:
-					mess = "ERROR-TYPE-2\n"
-					mess += "- Dòng sub số {index} có thời gian quá ngắn.\n"
-					mess += f"- Bạn hãy kiểm tra lại chữ có trùng hoặc sai không ?\n"
-					mess += f"- Bạn hãy xóa hoặc gộp dòng sub gần nhau lại\n\n"
-					# mess += f"- NỘI DUNG: {text}\n"
-					mess += f"- THỜI GIAN SUB: {duration} giây\n"
-					mess += f"- THỜI GIAN VOICE: {duration_voice} giây\n"
-					mess += f"- Nó lệch {round(tempo, 2)} lần thời gian của voice.\n"
-					if os.path.exists(folder_temp):
-						remove_dir(folder_temp)
-					return False, row_number, (mess, index, time_line, text)
-			
-			if os.path.exists(folder_temp):
-				remove_dir(folder_temp)
-		
+				index,  text)
+
 		thread_pool.finishSingleThread(id_worker)
 		return True, row_number, len(text)
 	
@@ -643,9 +500,9 @@ class PyTabAddSub(QWidget):
 				return
 			
 			if is_ok is False:
-				message, ind_row, time_line, text_sub = res
+				message, ind_row,  text_sub = res
 				
-				self.list_sub_fail.update({(ind_row): (message, time_line, text_sub)})
+				self.list_sub_fail.update({(ind_row): (message,  text_sub)})
 			
 			elif is_ok is None:
 				return
@@ -664,12 +521,12 @@ class PyTabAddSub(QWidget):
 					# print(sorted_dict_by_key)
 					count_delete = 0
 					for ind_row, err in sorted_dict_by_key.items():
-						message, time_line, text_sub = err
+						message, text_sub = err
 						# print(ind_row)
 						row_curr = ind_row - count_delete
 						self.groupbox_timeline.main_table.selectRow(row_curr)
 						
-						dial = PyDialogThoiGianSub(message.format(index=row_curr + 1), "Chỉnh sửa Dòng Sub", time_line, text_sub, width=688, height=350)
+						dial = PyDialogThoiGianSub(message.format(index=row_curr + 1), "Chỉnh sửa Dòng Sub",  text_sub, width=688, height=350)
 						if dial.exec():
 							if dial.is_delete:
 								count_delete += 1
@@ -703,13 +560,13 @@ class PyTabAddSub(QWidget):
 				
 				total_character = self.total_character + 0  # tạo bản copy
 				# print(total_character)
-				path_video = self.list_path_video[(row_number)]
+				folder_name = self.list_folder_name[(row_number)]
 				cau_hinh = self.list_cau_hinh[(row_number)]
 				data_sub = self.list_data_sub[(row_number)]
 				
 				data_sub_new = self.list_data_sub_new.get((row_number), None)
 				
-				self.list_worker_tts[(row_number)] = path_video
+				self.list_worker_tts[(row_number)] = folder_name
 				# _____________________________ KIỂM TRA SỐ LƯỢNG TỪ CÓ ĐỦ BÊN SERVER TRẢ PHÍ________________________________
 				
 				lamda_server_trans = SERVER_TAB_TTS.get(
@@ -738,8 +595,7 @@ class PyTabAddSub(QWidget):
 				
 				list_fonts, rect_blur, layers = self.groupBox_showscreen.viewer.list_fonts, self.groupBox_showscreen.viewer.list_blur, self.groupBox_showscreen.viewer.layers
 				
-				src_subtitle = self.src_subtitle + ''
-				
+
 				# thêm vào bảng
 				'''Sau khi thêm vào bảng thì trả về số dòng đó để trong các thread push status cho đúng'''
 				data_item_table = []
@@ -751,10 +607,10 @@ class PyTabAddSub(QWidget):
 				self.render_tts_finished[(row_number)] = False
 				
 				list_layers = [list(layer.values())[0].itemToVariant() for layer in layers]
-				name_video, ext = os.path.basename(path_video)[:-4], os.path.basename(path_video)[-4:]
+				# name_video, ext = os.path.basename(path_video)[:-4], os.path.basename(path_video)[-4:]
 				
 				data_save = {
-					"video_path": path_video,
+					"folder_name": folder_name,
 					"list_layers": list_layers,
 					"sub_hien_thi": cau_hinh,
 					"list_blur": [blur.itemToVariant().get('value') for blur in
@@ -763,26 +619,16 @@ class PyTabAddSub(QWidget):
 				# a482ea79eb6afee5c67ade6179031ce4ebf7b445c680ed2e93549c8368a43928
 				key_hash = str(data_save)
 				
-				folder_name = DeepHash(key_hash)[key_hash]
+				folder_temp = DeepHash(key_hash)[key_hash]
 				
-				folder_audio, folder_video = self.getFolderRow(folder_name )
-				file_output = JOIN_PATH(PATH_VIDEO, str(folder_name) + ext)
-				if checkVideoOk(file_output):
-					# is_ok = PyMessageBox().show_question("Thông báo", "Đã tồn tại file video render trước đó. Bạn có muốn render lại ?")
-					# if is_ok:
-					try:
-						remove_dir(folder_video)
-						os.unlink(file_output)
-						os.mkdir(folder_video)
-					except:
-						print("Không xóa được file output")
-						
+				folder_audio, folder_video = self.getFolderRow(folder_temp )
+
 				self.manage_thread_pool.statusChanged.emit(str(row_number), UPDATE_STATUS_TABLE_PROCESS,
 					"Đang Đợi...")
 				self.thread_pool_limit.start(self.funcRenderTTS, START_RENDER_VIDEO_TTS, START_RENDER_VIDEO_TTS,
 					data=(
-						folder_audio, folder_video, file_output, list_fonts, rect_blur, list_layers, path_video,
-						row_number, src_subtitle, cau_hinh, data_sub, data_sub_new))
+						folder_audio, folder_video,  list_fonts, rect_blur, list_layers, folder_name,
+						row_number, cau_hinh, data_sub, data_sub_new))
 		
 		# except:
 		# pass
@@ -800,24 +646,14 @@ class PyTabAddSub(QWidget):
 				cau_hinh_edit = json.loads(self.fileSRTCurrent.value)
 				pos_add_sub = cau_hinh_edit.get('pos_add_sub')
 				self.video_render.render_video_preview(self.path_video, filters, row_number, cau_hinh, data_sub, pos_add_sub)
-		
-		if id_thread == VIDEO_RENDER_NOT_TTS:
-			self.video_render.render_video_no_tts(*result)
-		
-		# if id_thread == UPDATE_TY_LE_KHUNG_HINH_VIDEO:
-		# self.groupBox_showscreen.loadData(self.configCurrent)
-		
+
 		if id_thread == TRANSLATE_SUB_FINISHED or id_thread == LOAD_SUB_IN_TABLE_FINISHED:
 			# print('ok')
 			self.setDisabledButton(False)
 		
 		if id_thread == SET_STATUS_BUTTON_START:
 			self.setDisabledButton(result)
-		
-		if id_thread == RENDER_VIDEO_FFMPEG_NO_TTS_FINISHED:
-			row_number = int(id_worker)
-			id_WK = self.list_worker_tts[(row_number)]
-			self.manage_thread_pool.finishSingleThread(id_WK)
+
 		
 		if id_thread == TEXT_TO_SPEECH_PUSH_PATH_AUDIO:
 			row_number, folder_audio = result
@@ -833,50 +669,16 @@ class PyTabAddSub(QWidget):
 	
 	
 	def funcRenderTTS (self, **kwargs):
-		
-		folder_audio, folder_video, file_output, list_fonts, rect_blur, list_layers, path_video, row_number, src_subtitle, cau_hinh, data_sub, data_sub_new = kwargs.get('data')
-		
-		# if cau_hinh.get('render_style') == RenderStyleEnum.Tach.value:
-		# print("ddd")
-		# if checkVideoOk(file_output):
-		# 	self.video_render.list_count_state_render_tts[(row_number)] = 0
-		# 	self.video_render.list_video_output_render[(row_number)] = file_output
-		# 	self.video_render.list_folder_audio[(row_number)] = folder_audio
-		# 	self.video_render.list_folder_video[(row_number)] = folder_video
-		# 	self.video_render.list_data_sub[(row_number)] = data_sub
-		# 	self.video_render.list_data_sub_new[(row_number)] = data_sub_new
-		# 	self.video_render.list_cau_hinh[(row_number)] = cau_hinh
-		# 	self.video_render.list_video_path[(row_number)] = path_video
-		# 	self.video_render.list_count_chunk_finished[(row_number)] = 0
-		# 	self.video_render.list_file_temp_chunk[(row_number)] = {}
-		# 	self.video_render.list_file_temp_media[(row_number)] = []
-		# 	self.video_render.list_run_fail[(row_number)] = False
-		# 	self.video_render.list_tts_finished[(row_number)] = False
-		# 	self.video_render.list_time_render[(row_number)] = time.time()
-		# 	# print("Vòa có")
-		# 	self.manage_thread_pool.resultChanged.emit(UPDATE_PECENT_RANGE_TTS_CHUNK_TABLE_PROCESS,
-		# 		UPDATE_PECENT_RANGE_TTS_CHUNK_TABLE_PROCESS,
-		# 		{"row_number": row_number, "percent_range": 25})
-		# 	self.manage_thread_pool.resultChanged.emit(UPDATE_RANGE_PROGRESS_TTS_CHUNK_TABLE_PROCESS,
-		# 		UPDATE_RANGE_PROGRESS_TTS_CHUNK_TABLE_PROCESS,
-		# 		{"row_number": row_number, "range": 2,
-		# 		 "index_chunk": 0})  # 0 render, 1 tts,2 là ghép, 3 nối
-		# 	# self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
-		# 	# 	"row_number": kwargs.get("row_number"), "index_chunk": 0}),
-		# 	# 	25)
-		# 	self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
-		# 		"row_number": row_number, "index_chunk": 0}), 2)
-		# 	# print("Update")
-		# 	self.manage_thread_pool.resultChanged.emit(RENDER_VIDEOPRE_FINISHED, RENDER_VIDEOPRE_FINISHED, row_number)
-		# else:
 
+		folder_audio, folder_video, list_fonts, rect_blur, list_layers, folder_name,row_number, cau_hinh, data_sub, data_sub_new = kwargs.get('data')
 		cau_hinh_edit = json.loads(self.fileSRTCurrent.value)
 		pos_add_sub = cau_hinh_edit.get('pos_add_sub')
-		self.video_render.render_video_TTS_split(path_video, list_layers, list_fonts, rect_blur, file_output, row_number, src_subtitle, cau_hinh, data_sub, data_sub_new, folder_audio, folder_video, pos_add_sub)
+		self.covertTTS.convertTextToSpeechChunk(row_number, cau_hinh, data_sub, folder_audio)
+
+		self.video_render.render_video_image(folder_name, list_layers, list_fonts, rect_blur, row_number,cau_hinh, data_sub, data_sub_new, folder_audio, folder_video, pos_add_sub)
 		if data_sub_new is not None:
 			data_sub = data_sub_new
-		self.covertTTS.convertTextToSpeechChunk(row_number, cau_hinh, data_sub, folder_audio)
-	
+
 	def checkaudiovideo (self, cau_hinh, video_path):
 		
 		if cau_hinh['text_to_speech']:
@@ -890,7 +692,8 @@ class PyTabAddSub(QWidget):
 	def loadFileSRTCurrent (self, fileSRTCurrent, db_app, db_srt_file):
 		self.fileSRTCurrent = fileSRTCurrent
 		cau_hinh_edit: dict = json.loads(fileSRTCurrent.value)
-		
+		self.folder_name = cau_hinh_edit.get('folder_name')
+
 		# path_video = cau_hinh_edit.get('video_file')
 		# if os.path.isfile(path_video):
 		# 	self.path_video = path_video
