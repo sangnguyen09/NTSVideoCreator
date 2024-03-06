@@ -142,9 +142,10 @@ class RectangleItemLayer(QGraphicsRectItem):
 				action_setting = menu.addAction(QIcon(ConfigResource.set_svg_icon("settings.svg")), "Cài Đặt")
 				action = menu.exec(event.screenPos())
 				
-				# index = self.layers.index({self.id_layer: self}) cách 1
-				index = int(self.zValue() - 1)  # cách 2 -1 vì luc đầu +1
-				
+				index = self.layers.index({self.id_layer: self}) #cách 1
+				# index = int(self.zValue() - 1)  # cách 2 -1 vì luc đầu +1
+				# print(index)
+				# print(self.layers)
 				if action == action_delete:
 					del self.layers[index]
 					self.scene.removeItem(self)

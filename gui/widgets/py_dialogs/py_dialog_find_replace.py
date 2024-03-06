@@ -1,5 +1,4 @@
 import os.path
-import re
 
 from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QWidget, QPushButton, QLabel, QCheckBox, \
@@ -7,14 +6,13 @@ from PySide6.QtWidgets import QWidget, QPushButton, QLabel, QCheckBox, \
 
 from gui.configs.config_resource import ConfigResource
 from gui.configs.config_theme import ConfigTheme
-from gui.helpers.constants import SETTING_APP_DATA, TOOL_CODE_MAIN, APP_PATH, UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED
+from gui.helpers.constants import SETTING_APP_DATA, TOOL_CODE_MAIN, APP_PATH
 from gui.helpers.func_helper import getValueSettings
 from gui.helpers.server import TYPE_TTS_SUB, TypeSubEnum
 from gui.widgets.py_combobox import PyComboBox
 from gui.widgets.py_icon_button.py_button_icon import PyButtonIcon
 from gui.widgets.py_messagebox.py_massagebox import PyMessageBox
 from gui.widgets.py_table_widget.model_timeline_addsub import ColumnNumberTabEdit
-
 
 style = '''
 QDialog {{

@@ -2269,7 +2269,7 @@ def create_file_sub_ass (filename_srt, cau_hinh, sequences, pos_add_sub):
 	source.append(u"Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
 	# TODO: ac, ratio, time_, text
 	for seq in sequences:
-		ac, ratio, time_, text = seq
+		time_, text = seq
 		start, end = time_.split(' --> ')
 		start_ = str_to_timecode(datetime.strptime(start, "%H:%M:%S,%f").time().__str__())
 		end_ = str_to_timecode(datetime.strptime(end, "%H:%M:%S,%f").time().__str__())

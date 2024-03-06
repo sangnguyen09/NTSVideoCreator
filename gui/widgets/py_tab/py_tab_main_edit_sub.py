@@ -159,8 +159,9 @@ class PyTabEditSub(QWidget):
         widget_left.setLayout(self.content_left_layout)
         widget_right = QWidget()
         widget_right.setLayout(self.content_right_layout)
-        self.resize_splitter.addWidget(widget_left)
         self.resize_splitter.addWidget(widget_right)
+        self.resize_splitter.addWidget(widget_left)
+
 
         self.bg_layout.addWidget(self.resize_splitter, 80)
         self.bg_layout.addLayout(self.content_bottom_layout, 20)
@@ -270,16 +271,14 @@ class PyTabEditSub(QWidget):
     def dropEvent(self, event):
         lines = []
         for url in event.mimeData().urls():
+            # print(url.toLocalFile())
             lines.append(url.toLocalFile())
         if len(lines) > 0:
-            srt_path = lines[0]
-            if os.path.isfile(srt_path) is True:
-                name, ext = os.path.splitext(srt_path)
-                if not ext.lower() in ['.srt']:
-                    return PyMessageBox().show_warning("Thông báo", f"File {ext} không được hỗ trợ")
-                self.manage_thread_pool.resultChanged.emit(LOAD_VIDEO_FROM_FILE_SRT, LOAD_VIDEO_FROM_FILE_SRT, srt_path)
+            folder_name = lines[0]
+            if os.path.isdir(folder_name):
+                self.manage_thread_pool.resultChanged.emit(LOAD_VIDEO_FROM_FILE_SRT, LOAD_VIDEO_FROM_FILE_SRT, folder_name)
             else:
-                return PyMessageBox().show_warning("Thông báo", "File SUB srt không không tồn tại ")
+                return PyMessageBox().show_warning("Thông báo", "Chị hỗ trợ load thư mục")
 
 # def keyPressEvent (self, event):
 # 	print('111111')

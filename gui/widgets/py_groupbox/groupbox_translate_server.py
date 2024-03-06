@@ -492,13 +492,13 @@ class GroupboxTranslateServer(QWidget):
 		if server_trans == 'baidu':
 			lang_source = 'auto'
 		
-		data_sub = []
-		for sub in sequences:
-			time, sub_origin, sub_translate = sub
-			data_sub.append(["dolech", time, 'pos_ori', sub_origin, sub_translate, 'pos_trans'])
+		# data_sub = []
+		# for sub in sequences:
+		# 	file_image, sub_origin, sub_translate = sub
+		# 	data_sub.append(sub_origin)
 		
 		if server_trans == 'chatgpt_thu_cong':
-			translateSubChatGPTThuCong(self.manage_thread_pool, type_thread_chatgpt, data_sub, lang_source, des_lang, lang_result, self.resetStatus)
+			translateSubChatGPTThuCong(self.manage_thread_pool, type_thread_chatgpt, sequences, lang_source, des_lang, lang_result, self.resetStatus)
 		
 		elif server_trans == 'chatgpt_pro' or 'translate_pro' in server_trans:
 			self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, True)
@@ -518,7 +518,7 @@ class GroupboxTranslateServer(QWidget):
 				
 				model = server_trans
 			
-			self.translate_server.translateSubServerPro(server_trans, type_thread_chatgpt, data_sub, lang_source, des_lang, lang_result, model, self.resetStatus, self.translate_cache)
+			self.translate_server.translateSubServerPro(server_trans, type_thread_chatgpt, sequences, lang_source, des_lang, lang_result, model, self.resetStatus, self.translate_cache)
 		
 		elif server_trans == 'chatgpt_api_key':
 			self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, True)
@@ -537,7 +537,7 @@ class GroupboxTranslateServer(QWidget):
 					return PyMessageBox().show_warning('WARNING',
 						f"Vui lòng nhập đầy đủ thông tin trong file open_api.json")
 			
-			self.translate_server.translateGPTApiKey(type_thread_chatgpt, data_sub, lang_source,
+			self.translate_server.translateGPTApiKey(type_thread_chatgpt, sequences, lang_source,
 				des_lang, lang_result, model, data_token.get("list_api"), data_token.get("prompt_custom"), data_token.get("line_break"), self.resetStatus,
 				self.translate_cache)
 		# print(chunk)

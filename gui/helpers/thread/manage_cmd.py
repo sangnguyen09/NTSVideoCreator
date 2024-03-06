@@ -15,7 +15,8 @@ from gui.helpers.constants import RENDER_VIDEO_FFMPEG_NO_TTS, RUN_CMD_AISUB, RUN
 	RESULT_CMD_RENDER_VIDEO_PRE_TTS, FIT_VIDEO_MATCH_VOICE, DETECT_LANGUAGE_AISUB, UPDATE_STATUS_TABLE_EXTRACT_PROCESS, \
 	ADD_VOICE_TO_VIDEO_CHUNK, RUN_CMD_DETECT_SUB_DEMO, CONCAT_VIDEO_FINAL, CONCAT_VIDEO_FILE_LIST, \
 	RENDER_VIDEO_FFMPEG_TTS_CHUNK, UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, STOP_GET_VOICE, CMD_SMART_CUT_VIDEO, \
-	UPDATE_STATUS_TABLE_RENDER, UPDATE_RANGE_PROGRESS_TABLE_PROCESS_ADD_PLUS, UPDATE_RANGE_PROGRESS_TABLE_PROCESS
+	UPDATE_STATUS_TABLE_RENDER, UPDATE_RANGE_PROGRESS_TABLE_PROCESS_ADD_PLUS, UPDATE_RANGE_PROGRESS_TABLE_PROCESS, \
+	RENDER_VIDEO_HAU_CAN_FFMPEG
 from gui.helpers.custom_logger import customFfmpegLogger
 
 STATES = {
@@ -333,12 +334,12 @@ class ManageCMD(QObject):
 					if progress_time:
 						self.progressSignal.emit(id_worker, type_cmd, progress_time, kwargs)
 				
-				if type_cmd == RESULT_CMD_RENDER_VIDEO_PRE_TTS:
-					progress_time = progessPercentFfmpeg(realtime_output.strip())
-					if progress_time:
-						self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
-							"row_number": kwargs.get("row_number"), "index_chunk": 0}),
-							progress_time)
+				# if type_cmd == RESULT_CMD_RENDER_VIDEO_PRE_TTS:
+				# 	progress_time = progessPercentFfmpeg(realtime_output.strip())
+				# 	if progress_time:
+				# 		self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
+				# 			"row_number": kwargs.get("row_number"), "index_chunk": 0}),
+				# 			progress_time)
 				# self.progressSignal.emit(id_worker, type_cmd, progress_time, kwargs)
 				
 				if type_cmd == FIT_VIDEO_MATCH_VOICE:
@@ -346,20 +347,32 @@ class ManageCMD(QObject):
 					if progress_time:
 						self.progressSignal.emit(id_worker, type_cmd, progress_time, kwargs)
 				
-				if type_cmd == RENDER_VIDEO_FFMPEG_TTS_CHUNK:
-					progress_time = progessPercentFfmpeg(realtime_output.strip())
-					if progress_time:
-						self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
-							"row_number": kwargs.get("row_number"), "index_chunk": kwargs.get("index_chunk") + 1}),
-							progress_time)
-				
+				# if type_cmd == RENDER_VIDEO_FFMPEG_TTS_CHUNK:
+				# 	progress_time = progessPercentFfmpeg(realtime_output.strip())
+				# 	if progress_time:
+				# 		self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
+				# 			"row_number": kwargs.get("row_number"), "index_chunk": kwargs.get("index_chunk") + 1}),
+				# 			progress_time)
+
+
 				if type_cmd == CONCAT_VIDEO_FILE_LIST:
 					progress_time = progessPercentFfmpeg(realtime_output.strip())
 					if progress_time:
 						self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
-							"row_number": kwargs.get("row_number"), "index_chunk": 4}),  # 4 là ghép nối
-							progress_time + kwargs.get('range_time_ms'))
-		
+							"row_number": kwargs.get("row_number"), "index_chunk": 2}),  # 2 là ghép nối
+							progress_time)
+
+				if type_cmd == CONCAT_VIDEO_FINAL:
+					progress_time = progessPercentFfmpeg(realtime_output.strip())
+					# print(progress_time)
+					if progress_time:
+						self.progressSignal.emit(id_worker, type_cmd, progress_time, kwargs)
+
+				if type_cmd == RENDER_VIDEO_HAU_CAN_FFMPEG:
+					progress_time = progessPercentFfmpeg(realtime_output.strip())
+					# print(progress_time)
+					if progress_time:
+						self.progressSignal.emit(id_worker, type_cmd, progress_time, kwargs)
 		try:
 			process.kill()
 			process.terminate()
@@ -464,11 +477,7 @@ class ManageCMD(QObject):
 			if progress_time:
 				self.progressSignal.emit(id_worker, type_cmd, progress_time, kwargs)
 		
-		if type_cmd == CONCAT_VIDEO_FINAL:
-			progress_time = progessPercentFfmpeg(output)
-			# print(progress_time)
-			if progress_time:
-				self.progressSignal.emit(id_worker, type_cmd, progress_time, kwargs)
+
 		
 		if type_cmd == ADD_VOICE_TO_VIDEO_CHUNK:
 			progress_time = progessPercentFfmpeg(output)
@@ -478,13 +487,13 @@ class ManageCMD(QObject):
 					"progress_time": progress_time,
 					"index_chunk": kwargs.get("index_chunk")})
 		
-		if type_cmd == RENDER_VIDEO_FFMPEG_TTS_CHUNK:
-			progress_time = progessPercentFfmpeg(output)
-			
-			if progress_time:
-				self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
-					"row_number": kwargs.get("row_number"), "index_chunk": kwargs.get("index_chunk") + 1}),
-					progress_time)
+		# if type_cmd == RENDER_VIDEO_FFMPEG_TTS_CHUNK:
+		# 	progress_time = progessPercentFfmpeg(output)
+		#
+		# 	if progress_time:
+		# 		self.manage_thread_pool.progressChanged.emit(UPDATE_VALUE_PROGRESS_TTS_CHUNK_TABLE_PROCESS, json.dumps({
+		# 			"row_number": kwargs.get("row_number"), "index_chunk": kwargs.get("index_chunk") + 1}),
+		# 			progress_time)
 	
 	def handle_state (self, id_worker, type_cmd, job_id, kwargs, state, *args):
 		# print(state)

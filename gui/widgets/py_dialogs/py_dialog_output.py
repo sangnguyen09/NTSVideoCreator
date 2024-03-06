@@ -104,7 +104,7 @@ class PyDialogOutput(QDialog):
 		
 		self.lb_thread = QLabel("Số Luồng:")
 		self.cbobox_thread = QComboBox()
-		self.cbobox_thread.addItems([str(i) for i in range(1, 5)])
+		self.cbobox_thread.addItems([str(i) for i in range(1, 15)])
 		# self.cbobox_thread.setCurrentText(str(2))
 		
 		self.cbobox_preset.setCurrentText("superfast")
@@ -112,8 +112,7 @@ class PyDialogOutput(QDialog):
 		self.cb_delete_data = PyCheckBox(value="delete_data_output", text="Xóa Dữ Liệu Sau Khi Hoàn Thành")
 		self.cb_show_log = PyCheckBox(value="show_log", text="Show Log")
 		
-		# self.cb_concat2 = PyCheckBox(value="concat2", text="Concat V2")
-		# self.cb_fast = PyCheckBox(value="concat2", text="Fast")
+
 		
 		self.lb_render_style = QLabel("Render Style:")
 		self.cbobox_render_style = QComboBox()
@@ -255,8 +254,8 @@ class PyDialogOutput(QDialog):
 		self.gbox_bitrate_layout.addWidget(self.lb_frame, 4, 3, alignment=Qt.AlignmentFlag.AlignRight)
 		self.gbox_bitrate_layout.addWidget(self.cbobox_fps, 4, 4,1,2)
 		self.gbox_bitrate_layout.addWidget(self.lb_thread, 4, 6, 1, 2, alignment=Qt.AlignmentFlag.AlignRight)
-		self.gbox_bitrate_layout.addWidget(self.cbobox_thread, 4, 8)
-		self.gbox_bitrate_layout.addWidget(self.cb_show_log, 4, 9, 1, 3, alignment=Qt.AlignmentFlag.AlignRight)
+		self.gbox_bitrate_layout.addWidget(self.cbobox_thread, 4, 8,1,2)
+		self.gbox_bitrate_layout.addWidget(self.cb_show_log, 4, 10, 1, 2, alignment=Qt.AlignmentFlag.AlignRight)
 		# self.gbox_bitrate_layout.addWidget(self.cb_concat2, 4, 10, 1, 2, alignment=Qt.AlignmentFlag.AlignRight)
 		
 		self.gbox_bitrate_layout.addWidget(self.lb_render_style, 5, 0, 1, 2)

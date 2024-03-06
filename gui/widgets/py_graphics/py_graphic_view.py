@@ -14,6 +14,7 @@ from gui.helpers.constants import STATUS_BUTTON_SAVE_CONFIG_CHANGED, LOAD_FONT_F
 	PATH_FONT, SETTING_CONFIG_SCREEN, TOOL_CODE_MAIN, POSITION_SUB_ORIGINAL_CHANGED, \
 	DELIMITER_POS_SUB, UPDATE_TY_LE_KHUNG_HINH_VIDEO, DELIMITER_CENTER_POS_SUB
 from gui.helpers.func_helper import getValueSettings
+from gui.widgets.py_graphics.py_background_video_main import BackgroundVideoMainItemLayer
 from gui.widgets.py_graphics.py_frame_video_main import FrameVideoMainItemLayer
 from gui.widgets.py_graphics.py_media_item import MediaItemLayer
 from gui.widgets.py_graphics.py_rect_blur import RectBlurItemLayer
@@ -50,9 +51,10 @@ class GraphicView(QGraphicsView):
 		# self._text_sub_translate = QGraphicsTextItem()
 		self._frame_blur = QGraphicsPixmapItem()
 		self._frame_video_main_sub = QGraphicsPixmapItem()
-		
+		self._video_main_blur = QGraphicsPixmapItem()
+
 		self._scene.addItem(self._rectbox_sub)
-		# self._scene.addItem(self._frame_video_main_sub)
+		# self._scene.addItem(self._video_main_blur)
 		# self._scene.addItem(self._frame_blur)
 		# self._scene.addItem(self._text_sub_origin)
 		# self._scene.addItem(self._text_sub_translate)
@@ -453,7 +455,7 @@ class GraphicView(QGraphicsView):
 				width_V, height_V = output_size.split("|")
 			except:
 				cau_hinh["chat_luong_video"] = "1920|1080"
-				cau_hinh["ti_le_khung_hinh"] = "16|9"
+				cau_hinh["ti_le_khung_hinh"] = "16:9"
 				self.configCurrent.value = json.dumps(cau_hinh)
 				self.configCurrent.save()
 				cau_hinh = json.loads(self.configCurrent.value)
@@ -590,7 +592,7 @@ class GraphicView(QGraphicsView):
 	# print(self._scene.items())
 	
 	# @decorator_try_except_class
-	def setVideoMain (self, pixmap, width_V, height_V, video_new):
+	def setVideoMain (self, pixmap,pixmap_bur, width_I, height_I, video_new):
 		if pixmap:
 			# print("setVideoMain")
 			
@@ -598,35 +600,58 @@ class GraphicView(QGraphicsView):
 			# print(self._scene.items())
 			if isinstance(self._frame_video_main_sub, FrameVideoMainItemLayer):
 				# print(video_new)
-				if video_new:
-					if hasattr(self._frame_video_main_sub, "_scale"):
-						del self._frame_video_main_sub._scale
-					
-					# pixmap = pixmap.scaled(width_V / (height_V / self._scene.height()), self._scene.height())
-					pixmap = pixmap.scaled(self._scene.width(), self._scene.height())
-					self._frame_video_main_sub.setPos(QPoint(0, 0))
-				else:
-					
-					if hasattr(self._frame_video_main_sub, "_scale"):
-						pixmap = pixmap.scaled(*self._frame_video_main_sub._scale)
-					else:
-						pixmap = pixmap.scaled(self._scene.width(), self._scene.height())
-				# pixmap = pixmap.scaled(width_V / (height_V / self._scene.height()), self._scene.height())
-				
+				# if video_new:
+				# 	if hasattr(self._frame_video_main_sub, "_scale"):
+				# 		del self._frame_video_main_sub._scale
+				#
+				# 	# pixmap = pixmap.scaled(width_V / (height_V / self._scene.height()), self._scene.height())
+				# 	pixmap = pixmap.scaled(self._scene.width(), self._scene.height())
+				# 	self._frame_video_main_sub.setPos(QPoint(0, 0))
+				# else:
+				#
+				# 	if hasattr(self._frame_video_main_sub, "_scale"):
+				# 		pixmap = pixmap.scaled(*self._frame_video_main_sub._scale)
+				# 	else:
+				# 		pixmap = pixmap.scaled(self._scene.width(), self._scene.height())
+				# # pixmap = pixmap.scaled(width_V / (height_V / self._scene.height()), self._scene.height())
+				ratio = width_I / height_I
+				width_i = int(self._scene.height() * (ratio))
+				pos_x = (self._scene.width()-width_i)/2
+
+				pixmap = pixmap.scaled(width_i, self._scene.height())
+
 				self._frame_video_main_sub.setPixmap(pixmap)
 				self._frame_video_main_sub.pixmap_ = pixmap
-				self._frame_video_main_sub.resizer.setPos(self._frame_video_main_sub.boundingRect().bottomRight() - self._frame_video_main_sub.r_offset)
-				self._frame_video_main_sub.refeshZValue()
+				self._frame_video_main_sub.setPos(pos_x,0)
+				# self._frame_video_main_sub.refeshZValue()
+				if pixmap_bur:
+					pixmap_bur = pixmap_bur.scaled(self._scene.width(), self._scene.height())
+					self._video_main_blur.setPixmap(pixmap_bur)
+
 			else:
+				if pixmap_bur:
+					pixmap_bur = pixmap_bur.scaled(self._scene.width(), self._scene.height())
+					self._video_main_blur=BackgroundVideoMainItemLayer(self.manage_thread_pool, pixmap, self.layers,self.configCurrent)
+					self._video_main_blur.setPixmap(pixmap_bur)
+					self._video_main_blur.setZValue(0)
+					self._scene.addItem(self._video_main_blur)
+
+
 				# print(12)
-				pixmap = pixmap.scaled(self._scene.width(), self._scene.height())
+				ratio = width_I / height_I
+				width_i = int(self._scene.height() * (ratio))
+				pos_x = (self._scene.width()-width_i)/2
+				pixmap = pixmap.scaled(width_i, self._scene.height())
+
+				# pixmap = pixmap.scaled(self._scene.width(), self._scene.height())
 				# pixmap = pixmap.scaled(width_V / (height_V / self._scene.height()), self._scene.height())
 				self._frame_video_main_sub = FrameVideoMainItemLayer(self.manage_thread_pool, pixmap, self.layers, self._frame_blur, self._rectblur_area)
-				# self._frame_video_main_sub.setPixmap(pixmap)
+				self._frame_video_main_sub.setPos(pos_x,0)
+				self._frame_video_main_sub.setZValue(0.1)
 				self._scene.addItem(self._frame_video_main_sub)
 				self.layers.insert(0, {self._frame_video_main_sub.id_layer: self._frame_video_main_sub})
-				self._frame_video_main_sub.refeshZValue()
-	
+				# self._frame_video_main_sub.refeshZValue()
+
 	
 	# @decorator_try_except_class
 	def getXCenterSub (self, text_, type_sub):

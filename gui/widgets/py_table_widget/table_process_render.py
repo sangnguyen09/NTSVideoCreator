@@ -190,6 +190,7 @@ class TableProcessRender(QWidget):
 		# ============== cho hiện dữ liệu =======
 		# []
 		# video_output = str(row_number) +'-'+ row_data[0][:-4] + f"-{cau_hinh['ten_hau_to_video']}"+ f".{cau_hinh['dinh_dang_video']}"
+		gender =''
 		if cau_hinh["text_to_speech"] is True:
 			server_trans = SERVER_TAB_TTS.get(
 				list(SERVER_TAB_TTS.keys())[cau_hinh.get("tab_tts_active")])
@@ -464,32 +465,7 @@ class TableProcessRender(QWidget):
 			item = QTableWidgetItem(str(result))
 			self.main_table.setItem(int(id_worker), self.column_name_video_ouput, item)
 		
-		if typeThread == RENDER_VIDEO_FFMPEG_TTS_CHUNK:
-			widget = self.main_table.cellWidget(int(result.get('row_number')), self.column_progress)
-			widget.progess.show()
-			
-			if self.end_video.get((result.get('row_number'))) is None:
-				self.end_video[(result.get('row_number'))] = 0
-			
-			if self.list_progress.get((result.get('row_number'))) is None:
-				self.list_progress[(result.get('row_number'))] = []
-			# self.list_progress_old[(int(result.get('row_number')))] = 0
-			
-			try:
-				del self.list_progress[(result.get('row_number'))][result.get('index_chunk')]
-			except IndexError:
-				pass
-			
-			self.list_progress[
-				(result.get('row_number'))].insert(result.get('index_chunk'), result.get('progress_time'))
-			# extra = result.get('progress_time') - self.list_progress_old[(int(result.get('row_number')))]
-			# print(self.list_progress[(result.get('row_number'))])
-			if result.get('end_video') is True:
-				self.end_video[(result.get('row_number'))] = result.get('progress_time')
-				widget.progess.setValue(sum(self.list_progress[(result.get('row_number'))]))
-			else:
-				widget.progess.setValue(sum(self.list_progress[(result.get('row_number'))]) + self.end_video[
-					(result.get('row_number'))])
+
 		
 		if typeThread == RESET_VALUE_PROGRESS_TABLE_PROCESS:
 			widget = self.main_table.cellWidget(int(result), self.column_progress)

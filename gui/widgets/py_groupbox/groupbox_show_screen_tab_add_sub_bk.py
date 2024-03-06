@@ -472,7 +472,7 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 				sub_current = data_sub[self.slider_change_frame.value() - 1]
 				# sequence = self.sequences[value_slider - 1]
 				# with VideoCapture(self.path_video) as video_cap:
-				time_ = sub_current[ColumnNumber.column_time.value]
+				time_ = sub_current[ColumnNumber.column_image.value]
 				# manage_thread.progressChanged.emit(UPDATE_VALUE_PROGRESS_GET_FRAME_IMAGE,id_worker,count + 1)
 				start = time_.split(' --> ')[0]
 				end = time_.split(' --> ')[1]

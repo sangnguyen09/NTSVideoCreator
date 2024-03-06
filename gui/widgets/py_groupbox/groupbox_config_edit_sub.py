@@ -62,8 +62,6 @@ class GroupBoxConfigEditSub(QWidget, QObject):
 
         self.setup_ui()
 
-        self.button_save.setDisabled(True)
-
     # self.loadConfig()
     def loadDataConfigCurrent(self, configCurrent):
 
@@ -96,8 +94,8 @@ class GroupBoxConfigEditSub(QWidget, QObject):
         self.cb_config_list.clear()
 
         self.fileSRTCurrent = fileSRTCurrent
-        self.text_edit_config_name.setText(fileSRTCurrent.ten_cau_hinh)
-        self.name_edit = fileSRTCurrent.ten_cau_hinh
+        # self.text_edit_config_name.setText(fileSRTCurrent.ten_cau_hinh)
+        # self.name_edit = fileSRTCurrent.ten_cau_hinh
         cau_hinh = json.loads(fileSRTCurrent.value)
         sub_hien_thi = cau_hinh.get('sub_hien_thi', 'origin')
         self.cbox_sub_hien_thi.setCurrentText(TYPE_TTS_SUB.get(sub_hien_thi))
@@ -129,6 +127,7 @@ class GroupBoxConfigEditSub(QWidget, QObject):
         # print(self.list_config)
 
         if len(self.list_config) > 0 and index >= 0 and (self.loadConfigFinish):  # cấu hình hiện tại
+            # print('2222')
 
             self.saveConfigActive(index)
             # self.button_save.setDisabled(True)
@@ -147,7 +146,7 @@ class GroupBoxConfigEditSub(QWidget, QObject):
         self.setup_connections()
 
     def create_widgets(self):
-        self.groupbox = QGroupBox("Setting")
+        self.groupbox = QGroupBox("Cấu Hình Project")
 
         self.text_edit_config_name = QLineEdit()
         self.cb_config_list = PyComboBox()
@@ -190,14 +189,18 @@ class GroupBoxConfigEditSub(QWidget, QObject):
 
         )
         # self.lb_file_srt = QLabel("Load File .SRT có sẵn:")
-        self.btn_dialog_folder_image = QPushButton("Open Folder Image")
+        self.btn_dialog_folder_image = QPushButton("Load Folder Image")
 
-        self.btn_export_srt = QPushButton("Xuất File")
+        self.btn_export_srt = QPushButton("Xuất Nội Dung")
         self.btn_export_srt.setCursor(Qt.CursorShape.PointingHandCursor)
 
-        self.button_save = QPushButton("Save")
-        self.button_save.setCursor(Qt.CursorShape.PointingHandCursor)
-        self.button_remove = QPushButton("Delete File SRT")
+        self.button_import_project = QPushButton("Nhập Project")
+        self.button_import_project.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self.button_export_project = QPushButton("Xuất Project")
+        self.button_export_project.setCursor(Qt.CursorShape.PointingHandCursor)
+
+        self.button_remove = QPushButton("Xóa Project")
         self.button_remove.setCursor(Qt.CursorShape.PointingHandCursor)
 
     def modify_widgets(self):
@@ -220,40 +223,36 @@ class GroupBoxConfigEditSub(QWidget, QObject):
         self.gbox_layout.addLayout(self.content_layout)
 
         self.content_layout.addWidget(QLabel(""))
+
         self.content_layout.addLayout(self.content_top_layout)
+        self.content_layout.addWidget(QLabel(""))
+
         self.content_layout.addLayout(self.content_mid_layout)
+        self.content_layout.addWidget(QLabel(""))
+
         self.content_layout.addLayout(self.content_btn_layout)
 
-        self.content_top_layout.addWidget(QLabel("Chọn File Srt"), 10)
-        self.content_top_layout.addWidget(self.cb_config_list, 40)
-        self.content_top_layout.addWidget(QLabel(""))
+        self.content_top_layout.addWidget(QLabel("Chọn Project Hiển Thị:"), 10)
+        self.content_top_layout.addWidget(self.cb_config_list, 70)
+        self.content_top_layout.addWidget(self.button_remove, 20)
+        # self.content_top_layout.addWidget(QLabel(""))
 
-        # self.content_top_layout.addWidget(QLabel("Đổi Tên Khác"), 10)
-        # self.content_top_layout.addWidget(self.text_edit_config_name, 40)
-
-        # self.content_top_layout.addWidget(QLabel("Sub Hiển Thị"), 10)
-        # self.content_top_layout.addWidget(self.cbox_sub_hien_thi, 40)
-        # self.content_mid_layout.addWidget(QLabel(""),20)
-        # self.content_mid_layout.addWidget(self.checkbox_auto_play)
-        # self.content_mid_layout.addWidget(QLabel(""))
-        # self.content_mid_layout.addWidget(self.lb_volume)
-        # self.content_mid_layout.addWidget(self.slider_volume)
-        # self.content_mid_layout.addWidget(self.lb_number_volume_tts)
         self.content_mid_layout.addWidget(QLabel(""))
 
-        self.content_mid_layout.addWidget(self.lb_font_size,10)
-        self.content_mid_layout.addWidget(self.combobox_font_size,10)
-        self.content_mid_layout.addWidget(QLabel(""),10)
-        self.content_mid_layout.addWidget(self.label_color,10)
+        self.content_mid_layout.addWidget(self.lb_font_size, 10)
+        self.content_mid_layout.addWidget(self.combobox_font_size, 10)
+        self.content_mid_layout.addWidget(QLabel(""), 10)
+        self.content_mid_layout.addWidget(self.label_color, 10)
         self.content_mid_layout.addWidget(self.input_color)
         self.content_mid_layout.addWidget(self.btn_dialog_color)
 
         # self.content_mid_layout.addWidget(QLabel(""), 20)
 
-        self.content_btn_layout.addWidget(self.btn_dialog_folder_image, 20)
+        self.content_btn_layout.addWidget(self.btn_dialog_folder_image)
         # self.content_btn_layout.addWidget(self.button_save)
-        self.content_btn_layout.addWidget(self.button_remove, 20)
-        self.content_btn_layout.addWidget(self.btn_export_srt, 20)
+        self.content_btn_layout.addWidget(self.button_import_project)
+        self.content_btn_layout.addWidget(self.button_export_project)
+        self.content_btn_layout.addWidget(self.btn_export_srt)
         # self.content_mid_layout.addWidget(QLabel(""), 20)
 
     def setup_connections(self):
@@ -261,9 +260,13 @@ class GroupBoxConfigEditSub(QWidget, QObject):
         self.cbox_sub_hien_thi.currentIndexChanged.connect(self.cbox_sub_hien_thiChanged)
         # self.button_save.clicked.connect(self.saveConfig)
         self.button_remove.clicked.connect(self._removeConfig)
-        self.text_edit_config_name.textChanged.connect(self.check_button_disabled)
+        # self.text_edit_config_name.textChanged.connect(self.check_button_disabled)
         self.btn_dialog_folder_image.clicked.connect(self._openDialogFolder)
+
         self.btn_export_srt.clicked.connect(self.clickSaveFile)
+        self.button_import_project.clicked.connect(self.clickImportProject)
+        self.button_export_project.clicked.connect(self.clickExportProject)
+
         self.slider_volume.valueChanged.connect(self.sliderVolumeValueChanged)
         # self.checkbox_auto_play.stateChanged.connect(self.checkbox_auto_playChanged)
 
@@ -290,12 +293,7 @@ class GroupBoxConfigEditSub(QWidget, QObject):
             self.input_color.setText(color_hex)
 
     def _resultThread(self, id_worker, id_thread, result):
-        # if id_thread == LOAD_CONFIG_TAB_ADD_SUB_CHANGED:
-        # 	if result:
-        # 		configActive = self.db_app.select_one_name("configEditSubActive")
-        # 		if configActive.configValue != self.cb_config_list.currentIndex():
-        # 			print(result.id)
-        # 			print(self.fileSRTCurrent.id)
+
         if id_thread == REMOVE_CONFIG_FILE_SRT:
             self._removeConfig()
         if id_thread == CHANGE_HIEN_THI_TAB_ADD_SUB:
@@ -352,20 +350,7 @@ class GroupBoxConfigEditSub(QWidget, QObject):
                 if data_sub_timeline[0][2] == "":
                     return PyMessageBox().show_warning("Thông Báo", "Sub chưa được dịch")
 
-            # data_sub = []
-            # for sub in data_sub_timeline:
-            # 	time, sub_origin, sub_translate = sub
-            # 	data_sub.append(["dolech", time, 'pos_ori', sub_origin, sub_translate, 'pos_trans'])
-            #
-            if format_sub == FormatSubEnum.SRT.value:
-                file_name, _ = QFileDialog.getSaveFileName(self, caption='Nhập tên file muốn lưu',
-                                                           dir=APP_PATH,
-                                                           filter='File subtitle (*.srt)')
-                if file_name == "":
-                    return
-
-                writeFileSrt(file_name, data_sub_timeline, type_sub)
-            elif format_sub == FormatSubEnum.TXT.value:
+            if format_sub == FormatSubEnum.TXT.value:
                 file_name, _ = QFileDialog.getSaveFileName(self, caption='Nhập tên file muốn lưu',
                                                            dir=APP_PATH,
                                                            filter='File txt (*.txt)')
@@ -374,6 +359,68 @@ class GroupBoxConfigEditSub(QWidget, QObject):
                 writeFileTXT(file_name, data_sub_timeline, type_sub)
 
             PyMessageBox().show_info("Thông Báo", "Lưu File Thành Công!")
+
+    def clickExportProject(self):
+        if hasattr(self, "fileSRTCurrent"):
+            id_remove = self.fileSRTCurrent.id
+            if id_remove == 1:
+                return PyMessageBox().show_warning("Cảnh Báo", "Không thể xuất Project này")
+
+            cau_hinh = json.loads(self.fileSRTCurrent.value)
+            data_sub_timeline = cau_hinh.get('data_table')
+            if len(data_sub_timeline) == 0:
+                return PyMessageBox().show_warning("Thông Báo", "Vui lòng tạo dự án mới")
+
+            file_name, _ = QFileDialog.getSaveFileName(self, caption='Nhập tên file muốn lưu',
+
+                                                       filter='File json (*.json)')
+            if file_name == "":
+                return
+
+            with open(file_name, "w") as file_data:
+                file_data.write(json.dumps(cau_hinh))
+
+            PyMessageBox().show_info("Thông Báo", "Xuất Project Thành Công!")
+
+    def clickImportProject(self):
+        if hasattr(self, "fileSRTCurrent"):
+
+            file_name, _ = QFileDialog.getOpenFileName(self, caption='Chọn file project',
+
+                                                       filter='File json (*.json)')
+            if file_name == "":
+                return
+            folder_name = QFileDialog.getExistingDirectory(self, caption='Chọn thư mục chứa hình ảnh')
+            if not os.path.isdir(folder_name):
+                return
+            print(1)
+            with open(file_name, "r") as file_data:
+                data_project = json.load(file_data)
+            print(2)
+
+            data_project.update({'folder_name': folder_name})
+            data_sub_timeline = data_project.get('data_table')
+            list_new = []
+            for index, item in enumerate(data_sub_timeline):
+                file_image, sub_origin, sub_translate = item
+                name_file = os.path.basename(file_image)
+                file_new = JOIN_PATH(folder_name, name_file)
+                list_new.append([file_new, sub_origin, sub_translate])
+
+            data_project.update({'data_table': list_new})
+            print(data_project)
+            name_project = os.path.basename(folder_name)
+            data_db = {}
+            data_db["ten_cau_hinh"] = name_project
+            data_db["value"] = json.dumps(data_project)
+            print(3)
+            dataAdd, created = self.db_cau_hinh.insert_one(data_db)
+            if created is False:
+                PyMessageBox().show_error('Cảnh Báo', "Không thể lưu cấu hình trạng thái")
+
+            if created is True:
+                self.saveConfigActive(0)
+                self.manage_thread_pool.resultChanged.emit(REFRESH_CONFIG_FILE_SRT, REFRESH_CONFIG_FILE_SRT, "")
 
     def _openDialogFolder(self):
         folder_name = QFileDialog.getExistingDirectory(self, caption='Chọn thư mục hình ảnh')
@@ -391,78 +438,15 @@ class GroupBoxConfigEditSub(QWidget, QObject):
             # num_max=1
             for file_name_ in out:
                 name, ext = os.path.splitext(file_name_)
-                if ext in ['.jpg', '.png', '.jpeg']:
-                    data_table.append([JOIN_PATH(folder_name,file_name_), "", ""])
+                if ext.lower() in ['.jpg', '.png', '.jpeg']:
+                    data_table.append([JOIN_PATH(folder_name, file_name_), "", ""])
 
-            print(data_table)
-            if len(data_table)<1:
+            # print(data_table)
+            if len(data_table) < 1:
                 return PyMessageBox().show_error('Cảnh Báo', "Không tìm thấy file hình ảnh nào!")
                 # sequences = filter_sequence_srt(path_file, path_video)
 
-            self.addNewConfig(folder_name,data_table)
-
-            #     if f.is_file():
-            #         if ext.lower() in ['.jpg', '.png', '.jpeg']:
-            #             print(name)
-                        # try:
-                        #     number = int(name)
-                        #     if number> num_max:
-                        #         num_max =number
-                        # except:
-                        #     pass
-            # print(name)
-                    # if "uncompyle6" in f.path.lower():
-        # path_file, _ = QFileDialog.getOpenFileName(self, caption='Chọn file sub .srt',
-        #                                            dir=(APP_PATH), filter='File Sub (*.srt)')
-        #
-        # if os.path.exists(path_file):
-        #     video_temporary_mp4 = path_file[:-4] + '.mp4'
-        #     video_temporary_avi = path_file[:-4] + '.avi'
-        #     video_temporary_mkv = path_file[:-4] + '.mkv'
-        #     video_temporary_wmv = path_file[:-4] + '.wmv'
-        #     video_temporary_flv = path_file[:-4] + '.flv'
-        #     video_temporary_mov = path_file[:-4] + '.mov'
-        #     # *wmv * flv * mkv * mov
-        #     # print(video_temporary_mp4)
-        #
-        #     if os.path.isfile(f'{video_temporary_mp4}'):
-        #         path_video = video_temporary_mp4
-        #     elif os.path.isfile(video_temporary_avi):
-        #         path_video = video_temporary_avi
-        #
-        #     elif os.path.isfile(video_temporary_mkv):
-        #         path_video = video_temporary_mkv
-        #
-        #     elif os.path.isfile(video_temporary_wmv):
-        #         path_video = video_temporary_wmv
-        #
-        #     elif os.path.isfile(video_temporary_flv):
-        #         path_video = video_temporary_flv
-        #
-        #     elif os.path.isfile(video_temporary_mov):
-        #         path_video = video_temporary_mov
-        #
-        #     else:
-        #         PyMessageBox().show_error('Cảnh Báo', "Không tìm thấy file 'Video' tương ứng!")
-        #         return
-        #
-        #     name = os.path.basename(path_file)
-        #
-        #     if is_chinese_char(name):
-        #         PyMessageBox().show_error('Cảnh Báo', "Tên file phải để tiếng anh không dấu")
-        #         return
-        #     # self.text_src_file.setText(path_file)
-        #
-        #     sequences = filter_sequence_srt(path_file, path_video)
-        #     data_table = []
-        #     for (count, item) in enumerate(sequences):
-        #         stt_, time_, content_ = item[0], item[1], item[2]
-        #         data_table.append([time_, content_, ""])
-        #
-        #     self.addNewConfig(path_file, path_video, data_table)
-
-    # self.path_srt = path_file
-    # self.path_video = path_video
+            self.addNewConfig(folder_name, data_table)
 
     def cbox_sub_hien_thiChanged(self, index):
         if hasattr(self, "fileSRTCurrent") and self.fileSRTCurrent:
@@ -473,14 +457,6 @@ class GroupBoxConfigEditSub(QWidget, QObject):
             # print('vào')
             self.manage_thread_pool.resultChanged.emit(CHANGE_HIEN_THI_TAB_EDIT_SUB, CHANGE_HIEN_THI_TAB_EDIT_SUB,
                                                        cau_hinh["sub_hien_thi"])
-
-    def check_button_disabled(self):
-        text_edit = self.text_edit_config_name.text()
-        self.button_save.setDisabled(True)
-
-        if self.name_edit != text_edit:
-            # self.button_save.setText("SAVE")
-            self.button_save.setDisabled(False)
 
     def saveConfigActive(self, id):
         # print(id)

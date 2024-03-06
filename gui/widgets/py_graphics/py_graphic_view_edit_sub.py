@@ -342,10 +342,10 @@ class GraphicViewEditSub(QGraphicsView):
 		# if os.path.exists(video_url):
 			self._empty = False
 			# self._scene.removeItem(self._frame_video_main_sub)
-			try:
-				self._scene.removeItem(self.video_main_sub)
-			except:
-				pass
+			# try:
+			# 	self._scene.removeItem(self.video_main_sub)
+			# except:
+			# 	pass
 			# self._frame_video_main_sub = QGraphicsPixmapItem()
 			self._frame_video_main_sub.setPixmap(pixmap)
 

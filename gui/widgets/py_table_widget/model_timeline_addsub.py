@@ -1,3 +1,4 @@
+import os.path
 from enum import Enum
 
 from PySide6.QtCore import Qt, QAbstractTableModel, Slot, QModelIndex
@@ -13,7 +14,7 @@ class ColumnNumberTabEdit(Enum):
 
 
 class ColumnNumber(Enum):
-    column_chuc_nang = 0
+    column_image = 0
     # column_do_lech = 1
     # column_time = 2
     column_sub_text = 1
@@ -53,7 +54,7 @@ class TableAddModel(QAbstractTableModel):
         if role == Qt.EditRole:
 
             row, column = index.row(), index.column()
-            if column == ColumnNumber.column_chuc_nang.value:
+            if column == ColumnNumber.column_image.value:
                 return False
             self.__data[row][column] = value
             # print("edit", value)
@@ -118,10 +119,12 @@ class TableAddModel(QAbstractTableModel):
             if role == Qt.DisplayRole or role == Qt.EditRole:
                 row, column = index.row(), index.column()
                 value = self.__data[row][column]
-
-                if column == ColumnNumber.column_chuc_nang.value:
-                    value = "PREVIEW"
-
+                #
+                # if column == ColumnNumber.column_seconds.value:
+                #     value = "PREVIEW"
+                if column == ColumnNumber.column_image.value:
+                    name_file = os.path.basename(value)
+                    return name_file
                 return str(value)
 
             elif role == Qt.FontRole:
@@ -132,21 +135,6 @@ class TableAddModel(QAbstractTableModel):
                     font.setPixelSize(18)
                     return font
 
-
-            elif role == Qt.ForegroundRole:
-                try:
-                    row, column = index.row(), index.column()
-                    if column == ColumnNumber.column_do_lech.value:
-                        value = self.__data[row][column]
-                        if value == "":
-                            value = 0
-                        # if column == 0:
-                        return QColor(get_color_do_lech_sub(float(value)))
-
-                    elif column == ColumnNumber.column_chuc_nang.value:
-                        return QColor("#6eff0d")
-                except:
-                    pass
     def getData(self):
         return self.__data
     def rowCount(self, parent=QModelIndex()):
@@ -275,7 +263,8 @@ class TableEditModel(QAbstractTableModel):
                 row, column = index.row(), index.column()
                 value = self.__data[row][column]
                 if column == ColumnNumberTabEdit.column_avatar.value:
-                    return ""
+                    name_file = os.path.basename(value)
+                    return name_file
                 return str(value)
 
             elif role == Qt.FontRole:
@@ -285,13 +274,13 @@ class TableEditModel(QAbstractTableModel):
                     font = QFont()
                     font.setPixelSize(self.font_size_table)
                     return font
-            elif role == Qt.DecorationRole:
-                row, column = index.row(), index.column()
-                if column == ColumnNumberTabEdit.column_avatar.value:
-                    value = self.__data[row][column]
-                    pixmap = QPixmap(value)
-                    pixmap = pixmap.scaled(100,100)
-                    return pixmap
+            # elif role == Qt.DecorationRole:
+            #     row, column = index.row(), index.column()
+            #     if column == ColumnNumberTabEdit.column_avatar.value:
+            #         value = self.__data[row][column]
+            #         pixmap = QPixmap(value)
+            #         pixmap = pixmap.scaled(100,100)
+            #         return pixmap
 
             elif role == Qt.ForegroundRole:
                 try:

@@ -371,8 +371,8 @@ def writeFileTXT (filename_srt, data_sub, type_srt):
 	origin_lag = Language(language(data_sub[0]))
 	with open(filename_srt, "w", encoding='utf-8') as file_data:
 		for index, item in enumerate(data_sub):
-			# TODO: time,sub_origin, sub_translate
-			time,sub_origin, sub_translate = item
+			# TODO: file_image,sub_origin, sub_translate
+			file_image,sub_origin, sub_translate = item
 			if type_srt == 0:
 				
 				content = str(sub_origin)
@@ -699,8 +699,11 @@ def ma_hoa_output_ffmpeg (cau_hinh):
 	
 	use_gpu = f'-vcodec libx264 -preset {he_so_preset} -r {he_so_fps}' if \
 		cau_hinh['use_gpu'] is False else f'-vcodec h264_nvenc -r {he_so_fps}'
-	
-	return f'{use_gpu} {bit_rate_video} {bit_rate_audio} -ar 48000 -c:a aac -crf {he_so_crf}'
+	channel_audio = cau_hinh.get("channel_audio", 1)
+
+	return f'{use_gpu} {bit_rate_video} {bit_rate_audio} -pix_fmt yuv420p -ac {channel_audio} -ar 48000 -c:a aac -crf {he_so_crf}'
+
+	# return f'{use_gpu} {bit_rate_video} {bit_rate_audio} -ar 48000 -c:a aac -crf {he_so_crf}'
 
 
 # return f'{use_gpu} {bit_rate_video} {bit_rate_audio} -ar 32000 -acodec libmp3lame -crf {he_so_crf}'
@@ -1115,9 +1118,19 @@ if __name__ == '__main__':
 	# # args.debug = True
 	# # args.quiet = True
 
-	# print()
-	data = [x for x in range(0, 100)]
-	chunks = [data[x:x + 5] for x in range(0, len(data), 5)]
-	print(data)
-	print(chunks)
+	print(['']*2)
+	lit=['1','2','3','']
+	lit5=[[2,3],'22','33']
+	a,b = lit[:1],lit[1:]
+
+	print(a,b)
+	# for a,b in zip(lit,lit5):
+	# 	print(a,b)
+	my_list = [1, 2, 3, 4, 5]
+	index = 2
+	element = my_list.pop(index)
+	my_list.insert(index - 1, element)
+	print(my_list)
+
 	pass
+

@@ -61,12 +61,12 @@ class PyTab(QWidget):
 		configEditSubActive = self.db_app.select_one_name("configEditSubActive")
 		
 		# xoá dữ liệu cũ
-		self.list_srt = []
+		self.list_project = []
 		
 		for idx, cf in enumerate(list_file_srt_db):
-			self.list_srt.insert(0, cf)
+			self.list_project.insert(0, cf)
 		
-		for idex, cf in enumerate(self.list_srt):  # kiểm tra trạng thai cấu hình nào được active
+		for idex, cf in enumerate(self.list_project):  # kiểm tra trạng thai cấu hình nào được active
 			if self.isLoaded:
 				if idex == int(configEditSubActive.configValue):
 					self.fileSRTCurrent = cf
@@ -110,9 +110,9 @@ class PyTab(QWidget):
 			
 			# self.tabWidget.addTab(self.tab_genenate_sub, "B1: TÁCH SUB")
 			
-			self.tabWidget.addTab(self.tab_edit_sub, "B2: SỬA Và DỊCH SUB")
+			self.tabWidget.addTab(self.tab_edit_sub, "SỬA Và DỊCH")
 			# if 'long_tieng' in setting_user.get('tab'):
-			self.tabWidget.addTab(self.tab_add_sub, "B3: Lồng Tiếng")
+			self.tabWidget.addTab(self.tab_add_sub, "Render Và Lồng Tiếng")
 			self.tabWidget.addTab(self.tab_shop, "NTS SHOP")
 		
 		# if 'tach_sub' in setting_user.get('tab'):
@@ -144,8 +144,8 @@ class PyTab(QWidget):
 		self.tab_edit_sub.loadDataConfigCurrent(self.configCurrent)
 	
 	def loadFileSRTCurrent (self):
-		self.tab_edit_sub.loadFileSRTCurrent(self.fileSRTCurrent, self.list_srt, self.db_app, self.db_list_file_srt)
-		self.tab_add_sub.loadFileSRTCurrent(self.fileSRTCurrent, self.db_app, self.db_list_file_srt)
+		self.tab_edit_sub.loadFileSRTCurrent(self.fileSRTCurrent, self.list_project, self.db_app, self.db_list_file_srt)
+		self.tab_add_sub.loadFileSRTCurrent(self.fileSRTCurrent, self.list_project, self.db_app, self.db_list_file_srt)
 	
 	#
 	# 	self.configCurrent = fileSRTCurrent
@@ -188,11 +188,11 @@ class PyTab(QWidget):
 		setting_user = self.user_data["list_tool"].get(TOOL_CODE_MAIN)
 		# print(setting_user)
 		
-		if not 'tach_sub' in setting_user.get("tab", []):
-			tex_overlay = TextOverlayWidget(self.tab_genenate_sub, "Bấm vào Tab NTS SHOP để nâng cấp chức năng TÁCH SUB", overlay_width=800, overlay_height=100)
-			tex_overlay.show()
+		# if not 'tach_sub' in setting_user.get("tab", []):
+		# 	tex_overlay = TextOverlayWidget(self.tab_genenate_sub, "Bấm vào Tab NTS SHOP để nâng cấp chức năng TÁCH SUB", overlay_width=800, overlay_height=100)
+		# 	tex_overlay.show()
 			
-		if not 'long_tieng' in setting_user.get("tab", []):
+		if not 'render_long_tieng' in setting_user.get("tab", []):
 			tex_overlay = TextOverlayWidget(self.tab_add_sub, "Bấm vào Tab NTS SHOP để nâng cấp chức năng LỒNG TIẾNG",overlay_width=800, overlay_height=100)
 			tex_overlay.show()
 	

@@ -28,10 +28,10 @@ class FrameVideoMainItemLayer(QGraphicsPixmapItem):
         # self.mousePressPos = None
         # self.mousePressRect = None
         self.setAcceptHoverEvents(True)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
-        self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True)
+        # self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsMovable, True)
+        # self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsSelectable, True)
+        # self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemSendsGeometryChanges, True)
+        # self.setFlag(QGraphicsItem.GraphicsItemFlag.ItemIsFocusable, True)
 
         self.setPos(QPoint(0,0))
         # Resizer actions

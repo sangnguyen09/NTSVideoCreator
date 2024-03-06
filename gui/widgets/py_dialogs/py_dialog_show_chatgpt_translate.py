@@ -150,8 +150,8 @@ class PyDialogShowGPTTranslate(QDialog):
 		if self.textarea_output.toPlainText() == "":
 			return PyMessageBox().show_warning('Cảnh Báo', "Vui lòng nhập vào VĂN BẢN ĐÃ DỊCH")
 		
-		so_dong_sub_goc = len(self._read_sequence(self.textarea_input.toPlainText()))
-		so_dong_sub_dich = len(self._read_sequence(self.textarea_output.toPlainText()))
+		so_dong_sub_goc = len(self.textarea_input.toPlainText().split('\n'))
+		so_dong_sub_dich = len(self.textarea_output.toPlainText().split('\n'))
 		# print(self.textarea_output.toPlainText())
 		# print(self._read_sequence(self.textarea_input.toPlainText()))
 		# print(self._read_sequence(self.textarea_output.toPlainText()))
@@ -165,7 +165,7 @@ class PyDialogShowGPTTranslate(QDialog):
 		return [list(filter(None, sequence)) for sequence in sequences]
 	
 	def getTextTranslate (self):
-		return [item[-1] for item in self._read_sequence(self.textarea_output.toPlainText())]
+		return [self.textarea_output.toPlainText().split('\n')]
 
 
 if __name__ == '__main__':

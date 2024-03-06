@@ -6,14 +6,10 @@ from gui.helpers.translatepy.translators.fpt import FPTTranslator
 from gui.helpers.translatepy.translators.tts_da_ngon_ngu import TTSDaNgonNguTranslator
 from gui.helpers.translatepy.translators.tts_folder_voice import TTSVoiceCoSanTranslator
 from gui.helpers.translatepy.translators.tts_online_free import TTSFreeOnlineTranslator
+from gui.helpers.translatepy.translators.tts_super_ai_voice import TTSSuperAiVoice
 from gui.helpers.translatepy.translators.tts_tieng_viet import TTSTiengVietTranslator
 from gui.helpers.translatepy.translators.vbee_api import VBeeAPITranslator
 from gui.helpers.translatepy.translators.viettel_ai import ViettelAITranslator
-from gui.widgets.py_groupbox.tab_con_tach_sub_tu_giong_noi import TabConTachSubTuGiongNoi
-from gui.widgets.py_groupbox.tab_con_tach_sub_tu_hinh_anh import TabConTachSubTuHinhAnh
-from gui.widgets.py_tab.py_tab_extract_sub_AI import PyTabExtractSubAI
-from gui.widgets.py_tab.py_tab_extract_sub_capcut import PyTabExtractSubCapCut
-from gui.widgets.py_tab.py_tab_extract_sub_use_youtube import PyTabExtractSubServerYoutube
 
 
 # except:
@@ -91,19 +87,20 @@ class TabIndexTTS(Enum):
 	FreeTTS = 0
 	TTSTiengViet = 1
 	TTSDaNgonNgu = 2
-	FPTAI = 3
-	VIETTELAI = 4
-	VbeeAPI = 5
+	SuperAIVoice = 3
+	FPTAI = 4
+	VIETTELAI = 5
+	VbeeAPI = 6
 	# Google = 6
-	CoSan = 6
+	CoSan = 7
 
 
 # VStudio = 8
 
 
 TYPE_TTS_SUB = {
-	"origin": "SUB GỐC",
-	"trans": "SUB DỊCH",
+	"origin": "GỐC",
+	"trans": "DỊCH",
 }
 
 
@@ -135,7 +132,12 @@ SERVER_TAB_TTS = {
 								   "key_lang": 'language_tts_pro', "gender": 'tts_pro',
 								   "name_api_db": "da_ngon_ngu_paid", "file_account": None, "web": None,
 								   "check_balance": True},
-	
+
+	"Super AI Voice": {'server_trans': lambda *args, **kwargs: TTSSuperAiVoice(*args, **kwargs),
+								   "key_lang": 'language_tts_super_voice', "gender": 'tts_super_voice',
+								   "name_api_db": "super_ai_voice_paid", "file_account": None, "web": None,
+								   "check_balance": True},
+
 	"FPT AI": {'server_trans': lambda *args, **kwargs: FPTTranslator(*args, **kwargs),
 			   "key_lang": 'language_vi', "gender": 'fpt', "name_api_db": "apiFPT",
 			   "file_account": "fpt-account.txt", 'get_token': get_token_fpt,
@@ -186,17 +188,17 @@ class CachLaySubYoutubeEnum(Enum):
 
 NAME_AI_LOCAL = "AI local"
 
-SERVER_EXTRACT_VOICE = {
-	NAME_AI_LOCAL: lambda *args: PyTabExtractSubAI(*args),
-	"CapCut": lambda *args: PyTabExtractSubCapCut(*args),
-	"Youtube": lambda *args: PyTabExtractSubServerYoutube(*args, CACH_LAY_SUB_YOUTUBE, CachLaySubYoutubeEnum),
-	# "Server Free": lambda *args: PyTabExtractSubServerSTT(*args, SERVER_SPEECHTOTEXT)
-}
+# SERVER_EXTRACT_VOICE = {
+# 	NAME_AI_LOCAL: lambda *args: PyTabExtractSubAI(*args),
+# 	"CapCut": lambda *args: PyTabExtractSubCapCut(*args),
+# 	"Youtube": lambda *args: PyTabExtractSubServerYoutube(*args, CACH_LAY_SUB_YOUTUBE, CachLaySubYoutubeEnum),
+# 	# "Server Free": lambda *args: PyTabExtractSubServerSTT(*args, SERVER_SPEECHTOTEXT)
+# }
 
-TYPE_EXTRACT_SUB = {
-	"Giọng Nói": lambda *args, **kwargs: TabConTachSubTuGiongNoi(*args, SERVER_EXTRACT_VOICE, NAME_AI_LOCAL, **kwargs),
-	"Hình Ảnh": lambda *args, **kwargs: TabConTachSubTuHinhAnh(*args, **kwargs)
-}
+# TYPE_EXTRACT_SUB = {
+# 	"Giọng Nói": lambda *args, **kwargs: TabConTachSubTuGiongNoi(*args, SERVER_EXTRACT_VOICE, NAME_AI_LOCAL, **kwargs),
+# 	"Hình Ảnh": lambda *args, **kwargs: TabConTachSubTuHinhAnh(*args, **kwargs)
+# }
 
 
 class IndexExtractYoutube(Enum):

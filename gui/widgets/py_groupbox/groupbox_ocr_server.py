@@ -20,7 +20,7 @@ from gui.helpers.constants import RESULT_TRANSLATE_SUB_EXTRACT, TRANSLATE_SUB_EX
     JOIN_PATH, PATH_DB, TRANSLATE_SUB_PART_TAB_EXTRACT, RESULT_TRANSLATE_SUB_EXTRACT_PART, \
     LOAD_SUB_TRANSLATE_CHATGPT_TABLE_EXTRACT_PART, STOP_THREAD_TRANSLATE, LANGUAGE_CODE_SPLIT_NO_SPACE, STOP_THREAD_OCR, \
     DETECT_IMAGE_TO_TEXT, DETECT_IMAGE_TO_TEXT_PART, UPDATE_VALUE_PROGRESS_OCR_TAB_EDIT, OCR_TEXT_FINISHED, \
-    OCR_PART_TAB_EDIT
+    OCR_PART_TAB_EDIT, LOAD_TXT_TABLE_EDIT
 from gui.helpers.ect import cr_pc, mh_ae, gm_ae
 from gui.helpers.func_helper import filter_sequence_srt, writeFileSrt, getValueSettings
 from gui.helpers.get_data import URL_API_BASE, LANGUAGES_SUPPORT_TRANSPRO1
@@ -219,6 +219,7 @@ class GroupboxOCRServer(QWidget):
         # self.btn_save_srt.clicked.connect(self.save_srt)
 
         self.btn_ocr_server.clicked.connect(self.clickStart)
+        self.btn_load_txt.clicked.connect(self.loadTXT)
 
     # self.btn_check_render.clicked.connect(self.clickCheckPreRender)
 
@@ -340,6 +341,36 @@ class GroupboxOCRServer(QWidget):
         self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, True)
 
     # @decorator_try_except_class
+    def loadTXT(self):
+        data_table = self.table_timeline_edit.getDataSub()
+        # print(data_table)
+        if len(data_table) < 1:
+            return PyMessageBox().show_warning('Cảnh Báo', "Chưa có hình ảnh nào nào được load !")
+
+        file_name, _ = QFileDialog.getOpenFileName(self, caption='Load file txt chứa văn bản',
+                                                   dir=(APP_PATH),
+                                                   filter='File txt (*.txt)')
+        if file_name == "":
+            self.resetStatus()
+            return PyMessageBox().show_warning('Cảnh Báo', f"File không tồn tại")
+
+        with open(file_name, "r", encoding='utf-8') as file_data:
+            content = file_data.read()
+            if content == "":
+                self.resetStatus()
+                return PyMessageBox().show_warning('Cảnh Báo', f"File rỗng")
+            so_dong_sub_goc = len(data_table)
+
+            so_dong_text = len(content.split("\n"))
+        # print(so_dong_sub_dich)
+        if not so_dong_text == so_dong_sub_goc:
+            self.resetStatus()
+            return PyMessageBox().show_warning('Cảnh Báo',
+                                               f"Số dòng hình ảnh là {so_dong_sub_goc}, nhưng số dòng chữ là {so_dong_text}. Không đều nhau")
+
+        self.manage_thread_pool.resultChanged.emit(LOAD_TXT_TABLE_EDIT,
+                                                   LOAD_TXT_TABLE_EDIT, content.split("\n"))
+
     def clickStart(self):
         self.table_timeline_edit.isOCRing = False
         self.table_timeline_edit.count_result_ocr = 0
@@ -401,7 +432,7 @@ class GroupboxOCRServer(QWidget):
 
     def resetStatus(self):
         self.lb_status.setText("")
-        self.btn_ocr_server.setText("DỊCH")
+        self.btn_ocr_server.setText("LẤY CHỮ Tự ĐỘng")
         self.progess_convert.hide()
         self.progess_convert.setValue(0)
         self.isStatusOcr = False
@@ -508,7 +539,7 @@ class GroupboxOCRServer(QWidget):
             if response.status_code == 200:
                 data = response.json().get('data')
                 req_id = data.get('req_id')
-                for i in range(60):
+                for i in range(200):
                     if get_is_stop():
                         return
                     try:

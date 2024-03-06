@@ -33,7 +33,7 @@ class TranslaterServer():
 		url = URL_API_BASE + "/translate/private/pro"
 		chunk_split = 5
 		self.is_error = False
-		
+
 		if server_trans == 'chatgpt_pro':
 			source_lang = Language(source_lang).in_foreign_languages.get('en')
 			des_lang = Language(des_lang).in_foreign_languages.get('en')
@@ -52,7 +52,7 @@ class TranslaterServer():
 			't': int(float(time.time())),
 			"tc": TOOL_CODE_MAIN,
 		}
-		
+		print(dataTrans)
 		data_encrypt = mh_ae(dataTrans, user_data['paes'])
 		
 		headers = {"Authorization": f"Bearer {user_data['token']}"}
@@ -95,15 +95,16 @@ class TranslaterServer():
 		chunk_split = kwargs.get('chunk_split')
 		
 		query_text = ''
-		for seq in chunk:
-			dolech, time_, pos_ori, sub_origin, sub_translate, pos_trans = seq
+		for index_, seq in enumerate(chunk):
+			# print(seq)
+			file_image, sub_origin, sub_translate = seq
 			
 			if str(lang_result.result) in LANGUAGE_CODE_SPLIT_NO_SPACE:
 				content = sub_origin.strip().replace("\n", "")
 			else:
 				content = sub_origin.strip().replace("\n", " ")
 			if server_trans == 'chatgpt_pro':
-				query_text += str(time_) + '\n'
+				query_text += f'00:00:0{index_},00 --> 00:00:0{index_+1},00' + '\n'
 				query_text += content + "\n\n"
 			else:
 				query_text += content + "\n"
@@ -146,7 +147,6 @@ class TranslaterServer():
 					return
 				response = requests.post(url=url,
 					json={"data": data_encrypt}, headers=headers)
-				# print(response.text)
 				# print(response.status_code)
 				if response.status_code == 200:
 					data = response.json().get('data')
@@ -156,6 +156,8 @@ class TranslaterServer():
 							return
 						try:
 							res = requests.get(url=URL_API_BASE + f"/translate/public/check-task/{req_id}", headers=headers)
+							# print(res.text)
+
 							if res.status_code == 200:
 								try:
 									text_res = gm_ae(res.json()["data"], user_data['paes'])
@@ -213,8 +215,8 @@ class TranslaterServer():
 		
 		type_ = 'subtitle'
 		if isinstance(sequences, str):
-			# dolech, time_, pos_ori, sub_origin, sub_translate, pos_trans = seq
-			chunks = [[["", "00:00:00,020 --> 00:00:01,470", "", sequences, "", ""]]]
+
+			chunks = [[ "", sequences, ""]]
 			type_ = 'text'
 		
 		else:
@@ -255,17 +257,20 @@ class TranslaterServer():
 		text_prompt = kwargs.get('text_prompt')
 		
 		query_text = ''
-		for seq in chunk:
-			dolech, time_, pos_ori, sub_origin, sub_translate, pos_trans = seq
+		for index_,seq in enumerate(chunk):
+			# dolech, time_, pos_ori, sub_origin, sub_translate, pos_trans = seq
 			# time_, sub_origin, translate = seq
-			
+			file_image, sub_origin, sub_translate = seq
+
 			if str(lang_result.result) in LANGUAGE_CODE_SPLIT_NO_SPACE:
 				content = sub_origin.strip().replace("\n", "")
 			else:
 				content = sub_origin.strip().replace("\n", " ")
 			
 			if type_ == 'subtitle':
-				query_text += str(time_) + '\n'
+				# query_text += str(time_) + '\n'
+				query_text += f'00:00:0{index_},00 --> 00:00:0{index_+1},00' + '\n'
+
 				query_text += content + "\n\n"
 			else:
 				query_text += content + "\n"
@@ -416,7 +421,7 @@ def translateSubChatGPTThuCong (manage_thread_pool, type_thread_chatgpt, sequenc
 	limit_char = dial.getValue()
 	
 	for index, seq in enumerate(sequences):
-		dolech, time_, pos_ori, sub_origin, sub_translate, pos_trans = seq
+		file_image, sub_origin, sub_translate = seq
 		
 		if len(sequence_temp) > limit_char:
 			chunks.append(sequence_temp)
@@ -426,9 +431,9 @@ def translateSubChatGPTThuCong (manage_thread_pool, type_thread_chatgpt, sequenc
 			content = sub_origin.strip().replace("\n", "")
 		else:
 			content = sub_origin.strip().replace("\n", " ")
-		sequence_temp += str(index+1) + '\n'
-		sequence_temp += str(time_) + '\n'
-		sequence_temp += content + "\n\n"
+		# sequence_temp += str(index+1) + '\n'
+		# sequence_temp += str(time_) + '\n'
+		sequence_temp += content + "\n"
 	# text_cur += content + "\n"
 	# print(len(sequence_temp))
 	if not sequence_temp == '':

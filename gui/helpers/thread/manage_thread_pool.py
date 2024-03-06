@@ -162,53 +162,53 @@ class Worker(QRunnable):
 	def run (self):  # phương thức chạy chính của worker
 		if not self.thread_pool.is_stop_all_thread and self.id_worker not in self.thread_pool.ids_thread_is_stop_single:
 			
-			try:
-				# kiểm tra trạng thái đang chạy hoặc dừng lại
-				if self.id_worker in self.thread_pool.ids_thread_is_pause_single:
-
-					self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread, STATUS_PAUSED)
-					while self.id_worker in self.thread_pool.ids_thread_is_pause_single:
-						# print("đang pause trong run")
-						time.sleep(0.5)  # <1> chế độ ngủ sẽ giúp giải phóng tài nguyên tốt hơn, có thể tăng lên
-
-				# khi dừng tất cả hoặc dừng từng thread thì sẽ ném ra lỗi dể dừng thread đó
-				if self.id_worker in self.thread_pool.ids_thread_is_stop_single:
-					# print("row stop ")
-					raise StopSingleWorkerException
-
-				if self.thread_pool.is_stop_all_thread:
-					# print("row stop ", self.kwargs["row"])
-					raise StopAllWorkerException
+			# try:
+			# 	# kiểm tra trạng thái đang chạy hoặc dừng lại
+			# 	if self.id_worker in self.thread_pool.ids_thread_is_pause_single:
+			#
+			# 		self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread, STATUS_PAUSED)
+			# 		while self.id_worker in self.thread_pool.ids_thread_is_pause_single:
+			# 			# print("đang pause trong run")
+			# 			time.sleep(0.5)  # <1> chế độ ngủ sẽ giúp giải phóng tài nguyên tốt hơn, có thể tăng lên
+			#
+			# 	# khi dừng tất cả hoặc dừng từng thread thì sẽ ném ra lỗi dể dừng thread đó
+			# 	if self.id_worker in self.thread_pool.ids_thread_is_stop_single:
+			# 		# print("row stop ")
+			# 		raise StopSingleWorkerException
+			#
+			# 	if self.thread_pool.is_stop_all_thread:
+			# 		# print("row stop ", self.kwargs["row"])
+			# 		raise StopAllWorkerException
 
 				# bắt đầu chạy code chính
 				self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread, STATUS_RUNNING)
 				result = self.fnRun(**self.kwargs)
 
-			except StopSingleWorkerException:
-				# print("vao trong stop")
-				self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread, STATUS_STOPPED)
-
-			except StopAllWorkerException:
-				self.thread_pool.stopAllThreadChanged.emit(self.id_worker)
-				self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread,
-					STATUS_STOPPED)  # cho status cập nhật sau để reload lại giao diện
-			except Exception as e:
-
-				# customLogger(self.fnRun.__name__, traceback.extract_tb(exc_tb)[-1][1]).error(str(e))
-				try:
-					exc_type, exc_obj, exc_tb = sys.exc_info()
-					mess = 'Func: ' + self.fnRun.__name__ + '\nDòng: ' + str(
-						traceback.extract_tb(exc_tb)[-1][1]) + '\n' + str(e)
-					print(mess)
-
-					self.thread_pool.errorChanged.emit(self.id_worker, self.typeThread, (self.fnRun.__name__, mess))
-				except:
-					self.thread_pool.errorChanged.emit(self.id_worker, self.typeThread, (self.fnRun.__name__, str(e)))
-
-			else:
-				self.thread_pool.finishSingleThreadChanged.emit(self.id_worker)
-				self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread,
-					STATUS_COMPLETE)  # trạng thái được cập nhật sau cập nhật hoàn thành để cập nhật lại giao giền lần cuối
+			# except StopSingleWorkerException:
+			# 	# print("vao trong stop")
+			# 	self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread, STATUS_STOPPED)
+			#
+			# except StopAllWorkerException:
+			# 	self.thread_pool.stopAllThreadChanged.emit(self.id_worker)
+			# 	self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread,
+			# 		STATUS_STOPPED)  # cho status cập nhật sau để reload lại giao diện
+			# except Exception as e:
+			#
+			# 	# customLogger(self.fnRun.__name__, traceback.extract_tb(exc_tb)[-1][1]).error(str(e))
+			# 	try:
+			# 		exc_type, exc_obj, exc_tb = sys.exc_info()
+			# 		mess = 'Func: ' + self.fnRun.__name__ + '\nDòng: ' + str(
+			# 			traceback.extract_tb(exc_tb)[-1][1]) + '\n' + str(e)
+			# 		print(mess)
+			#
+			# 		self.thread_pool.errorChanged.emit(self.id_worker, self.typeThread, (self.fnRun.__name__, mess))
+			# 	except:
+			# 		self.thread_pool.errorChanged.emit(self.id_worker, self.typeThread, (self.fnRun.__name__, str(e)))
+			#
+			# else:
+			# 	self.thread_pool.finishSingleThreadChanged.emit(self.id_worker)
+			# 	self.thread_pool.statusChanged.emit(self.id_worker, self.typeThread,
+			# 		STATUS_COMPLETE)  # trạng thái được cập nhật sau cập nhật hoàn thành để cập nhật lại giao giền lần cuối
 				self.thread_pool.resultChanged.emit(self.id_worker, self.typeThread, result)  # Trả về kết quả của việc gọi hàm
 		
 		# elif self.thread_pool.is_stop_all_thread:

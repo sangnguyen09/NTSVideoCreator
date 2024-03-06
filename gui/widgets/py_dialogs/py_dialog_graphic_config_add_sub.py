@@ -94,6 +94,7 @@ class PyDialogGraphicConfigAddSub(QDialog):
 		self.groupbox_nen_chu = QGroupBox("thêm Nền của sub:")
 		self.groupbox_nen_chu.setCheckable(True)
 		self.groupbox_nen_chu.setChecked(False)
+
 		self.label_mau_nen = QLabel("Màu:")
 		self.btn_dialog_mau_nen = PyButtonIcon(
 			icon_path=ConfigResource.set_svg_icon("color-picker.png"),

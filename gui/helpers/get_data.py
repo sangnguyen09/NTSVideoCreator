@@ -4,10 +4,10 @@ import os
 RELATIVE_PATH = lambda path: os.path.join(os.path.abspath(os.getcwd()), str(path))
 PATH_TOOL_FFSUB = RELATIVE_PATH("ffsub")
 # PATH_TOOL_FFSUB = r'E:\Project\Python\_APP\ffsub\dist\ffsub'
-URL_API_BASE = "http://127.0.0.1:8000/api/v1"
-# URL_API_BASE = "https://app.ntstool.com/api/v1"
-VERSION_CURRENT = "1.0"  #
-# git branch -M v4.4
+# URL_API_BASE = "http://127.0.0.1:8000/api/v1"
+URL_API_BASE = "https://app.ntstool.com/api/v1"
+VERSION_CURRENT = "1.2"  #
+# git branch -M v1.2
 PATH_FFCUT = RELATIVE_PATH('ffcut.exe')
 
 

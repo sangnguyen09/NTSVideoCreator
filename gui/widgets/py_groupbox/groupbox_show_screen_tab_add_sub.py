@@ -5,20 +5,18 @@ import os
 import cv2
 import numpy as np
 from PySide6.QtCore import Qt, Signal
-from PySide6.QtGui import QColor, QPixmap
+from PySide6.QtGui import QColor, QPixmap, QPainter
 from PySide6.QtWidgets import QWidget, QPushButton, QLabel, QFrame, QHBoxLayout, QVBoxLayout, QGroupBox, QGridLayout, \
-	QSlider, QFileDialog
+	QFileDialog
 
 from gui.configs.config_resource import ConfigResource
-from gui.db.sqlite import ConfigApp_DB
-from gui.helpers.constants import CHANGE_STYLE_SUB, STATUS_BUTTON_SAVE_CONFIG_CHANGED, \
-	TRANSLATE_SUB_FINISHED, ROW_SELECTION_CHANGED_TABLE_ADD_SUB, SELECTION_AREA_BLUR_CHANGED, \
-	SETTING_CONFIG_SCREEN, TOOL_CODE_MAIN, SHOW_DATA_TABLE_TIMELINE, SPLIT_SUB_IN_TABLE_FINISHED, \
-	LOAD_SUB_IN_TABLE_FINISHED, UPDATE_TY_LE_KHUNG_HINH_VIDEO, LOAD_CONFIG_TAB_ADD_SUB_CHANGED, \
-	LOAD_CONFIG_TAB_EDIT_SUB_CHANGED, CHANGE_HIEN_THI_SUB, CHANGE_STYLE_DIALOG_ADD_SUB, POSITION_ADD_SUB_CHANGED, \
+from gui.helpers.constants import STATUS_BUTTON_SAVE_CONFIG_CHANGED, \
+	ROW_SELECTION_CHANGED_TABLE_ADD_SUB, SELECTION_AREA_BLUR_CHANGED, \
+	SETTING_CONFIG_SCREEN, TOOL_CODE_MAIN, LOAD_SUB_IN_TABLE_FINISHED, UPDATE_TY_LE_KHUNG_HINH_VIDEO, \
+	CHANGE_HIEN_THI_SUB, CHANGE_STYLE_DIALOG_ADD_SUB, POSITION_ADD_SUB_CHANGED, \
 	CENTER_POSITION_ADD_SUB, DELIMITER_CENTER_POS_SUB, ITEM_TABLE_TIMELINE_EDIT_SUB_CHANGED, \
-	ITEM_TABLE_TIMELINE_ADD_SUB_CHANGED
-from gui.helpers.func_helper import getValueSettings, setValueSettings, VideoCapture
+	ITEM_TABLE_TIMELINE_ADD_SUB_CHANGED, CHANGE_BACKGROUND_MAIN_VIDEO, TypeBackgroundMainVideo
+from gui.helpers.func_helper import getValueSettings, setValueSettings
 from gui.helpers.thread import ManageThreadPool
 from gui.widgets.py_dialogs import PyDialogGraphicText
 from gui.widgets.py_graphics import GraphicView
@@ -288,19 +286,26 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 	# @decorator_try_except_class
 	def selectionAreaBlurChanged (self):
 		# try:
-		if hasattr(self, "path_video") and hasattr(self, "frame_current") and self.is_loaded and len(self.viewer.list_blur) > 0:
+		if hasattr(self,'folder_name') and os.path.isdir(self.folder_name) and len(self.viewer.list_blur) > 0:
 			
 			# self.viewer._scene.removeItem(self.viewer._frame_blur)
 			
-			pixmap = self.viewer._frame_video_main_sub.pixmap().copy()
+			# pixmap = self.viewer._frame_video_main_sub.pixmap().copy()
+
+			pixmap = QPixmap(self.viewer._scene.sceneRect().size().toSize())
+			pixmap.fill(Qt.transparent)
+			painter = QPainter(pixmap)
+			self.viewer._scene.render(painter, pixmap.rect(), self.viewer._scene.sceneRect())
+			painter.end()
 			# print(pixmap.size())
 			# print(self.viewer._frame_video_main_sub.x())
 			# print(self.viewer._frame_video_main_sub.y())
 			frame = self.pixmapToCV2(pixmap)
+
 			for index_blur, blur in enumerate(self.viewer.list_blur):
 				# print(blur)
-				crop_x = int(blur.pos().x() - self.viewer._frame_video_main_sub.x())
-				crop_y = int(blur.pos().y() - self.viewer._frame_video_main_sub.y())
+				crop_x = int(blur.pos().x() - pixmap.rect().x())
+				crop_y = int(blur.pos().y() - pixmap.rect().y())
 				crop_width = int(blur.rect().width())
 				crop_height = int(blur.rect().height())
 				
@@ -312,6 +317,8 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 					stroke_blur = 3  # viền màu xanh
 					frame_crop = frame[crop_y + stroke_blur:crop_y_end - stroke_blur,
 								 crop_x + stroke_blur:crop_x_end - stroke_blur]
+					# cv2.imshow("Gaussian Smoothing", frame_crop)
+					# cv2.waitKey(0)
 					if len(frame_crop) == 0:  # mảng rỗng
 						rect = self.viewer._scene.sceneRect()
 						pixmap_ = QPixmap(int(crop_width), int(crop_height))
@@ -322,14 +329,7 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 						# painter.end()
 						pixmap_.fill(QColor(0, 0, 0, 0))
 						self.viewer.setFrameBlur(pixmap_, stroke_blur, blur, index_blur)
-					# frame_ = self.pixmapToCV2(pixmap_)
-					# # cv2.imshow("Gaussian Smoothing", frame_)
-					# # cv2.waitKey(0)
-					# frame_crop_ = frame_[crop_y + stroke_blur:crop_y_end - stroke_blur,
-					#              crop_x + stroke_blur:crop_x_end - stroke_blur]
-					# image_blur = cv2.imencode('.png', frame_crop_)[1].tobytes()
-					
-					
+
 					else:
 						
 						sigma = blur.sigma
@@ -352,15 +352,44 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 		if hasattr(self,'folder_name') and os.path.isdir(self.folder_name):
 				# self.sequence_current = self.groupbox_timeline.getDataRow(line_number - 1)
 				cau_hinh_edit: dict = json.loads(self.fileSRTCurrent.value)
+				cau_hinh: dict = json.loads(self.configCurrent.value)
 				# item_current = cau_hinh_edit.get('data_table',[])[line_number-1]
 				self.sequence_current = self.groupbox_timeline.getDataRow(line_number - 1)
 				# print(self.sequence_current)
-				pixmap = QPixmap(self.sequence_current[ColumnNumber.column_chuc_nang.value])
-				frame_width = pixmap.width()
-				frame_height = pixmap.height()
-				self.viewer.setVideoMain(pixmap, frame_width, frame_height, self.video_new)
-				self.loadSubText(self.sequence_current[ColumnNumber.column_sub_text.value], cau_hinh_edit.get('pos_add_sub'))
-				self.selectionAreaBlurChanged()
+				image_curr =self.sequence_current[ColumnNumber.column_image.value]
+				if os.path.exists(image_curr):
+					pixmap = QPixmap(image_curr)
+					frame_width = pixmap.width()
+					frame_height = pixmap.height()
+
+					if cau_hinh.get('bg_video_main') ==TypeBackgroundMainVideo.BG_IMAGE_ORIGIN.value:
+						frame = cv2.imread(image_curr)
+
+						frame_blur = cv2.GaussianBlur(frame, (0, 0), cau_hinh.get('sigma_bg_image_ori',15) * 1, cv2.BORDER_DEFAULT)
+
+						image_blur = cv2.imencode('.png', frame_blur)[1].tobytes()
+						# cv2.imshow("Gaussian Smoothing", frame_blur)
+						# cv2.waitKey(0)
+						pixmap_bur = self.convertCvImage2QtImage(image_blur)
+					elif cau_hinh.get('bg_video_main') ==TypeBackgroundMainVideo.BG_IMAGE_NEW.value:
+						image_new = cau_hinh.get('src_bg_co_dinh')
+						if image_new == ''or  os.path.exists(image_new) is False:
+							return PyMessageBox().show_warning("Lỗi", "File ảnh nền không tìm thấy")
+
+						frame = cv2.imread(image_new)
+						# print(cau_hinh.get('sigma_bg_image_new',15))
+						frame_blur = cv2.GaussianBlur(frame, (0, 0), cau_hinh.get('sigma_bg_image_new',15) * 1, cv2.BORDER_DEFAULT)
+						image_blur = cv2.imencode('.png', frame_blur)[1].tobytes()
+						# cv2.imshow("Gaussian Smoothing", frame_blur)
+						# cv2.waitKey(0)
+						pixmap_bur = self.convertCvImage2QtImage(image_blur)
+					else:
+						pixmap_bur = QPixmap(frame_width, frame_height)
+						pixmap_bur.fill(QColor(cau_hinh.get('bg_color_main','#000000')))
+
+					self.viewer.setVideoMain(pixmap,pixmap_bur, frame_width, frame_height, self.video_new)
+					self.loadSubText(self.sequence_current[ColumnNumber.column_sub_text.value], cau_hinh_edit.get('pos_add_sub'))
+					self.selectionAreaBlurChanged()
 		# AC, content_ = self.sequence_current
 
 		# print(AC, Ratio, time_, content_)
@@ -453,9 +482,14 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 			self.video_new = True
  
 		
+		if typeThread == CHANGE_BACKGROUND_MAIN_VIDEO:
+			if hasattr(self, 'fileSRTCurrent'):
+				self.loadFrameVideo(self.groupbox_timeline.main_table.currentIndex().row()+1)
+
+
 		if typeThread == ROW_SELECTION_CHANGED_TABLE_ADD_SUB:
 				self.loadFrameVideo(result)
-		
+
 		if typeThread == ITEM_TABLE_TIMELINE_ADD_SUB_CHANGED or typeThread == ITEM_TABLE_TIMELINE_EDIT_SUB_CHANGED or typeThread == CHANGE_HIEN_THI_SUB or typeThread == CHANGE_STYLE_DIALOG_ADD_SUB:
 			if hasattr(self, 'fileSRTCurrent'):
 				sequence_current = self.groupbox_timeline.getDataRowCurrent()
@@ -473,7 +507,7 @@ class GroupBoxShowScreenTabAddSub(QWidget):
 				self.loadFrameVideo(1)
 
 		if typeThread == SELECTION_AREA_BLUR_CHANGED:
-			if hasattr(self, "path_video") and hasattr(self, "frame_current") and self.is_loaded:
+			if hasattr(self,'folder_name') and os.path.isdir(self.folder_name) :
 				self.selectionAreaBlurChanged()
 	
 		if typeThread == CENTER_POSITION_ADD_SUB:

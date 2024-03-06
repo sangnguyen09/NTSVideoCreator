@@ -1,14 +1,15 @@
 import json
+import os
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import budoux
 from PySide6 import QtWidgets, QtCore
 from PySide6.QtCore import Qt, Signal, QEvent, QPoint, QItemSelection, QItemSelectionModel, Slot, \
-    QCoreApplication
+    QCoreApplication, QModelIndex
 from PySide6.QtGui import QColor, QKeyEvent, QKeySequence, QAction
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QMenu, QTableWidgetItem, QAbstractItemView, \
-    QHeaderView, QTableView, QStyledItemDelegate, QPlainTextEdit
+    QHeaderView, QTableView, QStyledItemDelegate, QPlainTextEdit, QFileDialog
 
 from gui.helpers.constants import ROW_SELECTION_CHANGED_TABLE_EDIT_SUB, RESULT_TRANSLATE_SUB_EXTRACT, \
     TRANSLATE_SUB_EXTRACT_FINISHED, ITEM_TABLE_TIMELINE_EDIT_SUB_CHANGED, TOGGLE_SPINNER, \
@@ -21,7 +22,9 @@ from gui.helpers.constants import ROW_SELECTION_CHANGED_TABLE_EDIT_SUB, RESULT_T
     ACTION_PRESS_TACH_SUB, UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED, CHANGE_FONT_SIZE_TABLE_EDIT_SUB, \
     CHANGE_COLOR_TABLE_EDIT_SUB, DETECT_IMAGE_TO_TEXT, STOP_THREAD_OCR, DETECT_IMAGE_TO_TEXT_PART, \
     UPDATE_VALUE_PROGRESS_OCR_TAB_EDIT, OCR_TEXT_FINISHED, OCR_PART_TAB_EDIT, ACTION_PRESS_OCR_AGAIN, \
-    ACTION_PRESS_PREVIOUS_LINE_SUB, ACTION_PRESS_NEXT_LINE_SUB, UPDATE_CONTENT_EDIT_BINDING
+    ACTION_PRESS_PREVIOUS_LINE_SUB, ACTION_PRESS_NEXT_LINE_SUB, UPDATE_CONTENT_EDIT_BINDING, LOAD_TXT_TABLE_EDIT, \
+    ACTION_PRESS_MOVE_UP, ACTION_PRESS_MOVE_DOWN, ACTION_PRESS_ADD_ROW_UP, ACTION_PRESS_ADD_ROW_DOWN, \
+    ACTION_PRESS_DELETE_ITEM
 from gui.helpers.thread.manage_thread_pool import ManageThreadPool
 from .model_timeline_addsub import ColumnNumberTabEdit, TableEditModel
 from ..py_dialogs.py_dialog_find_replace import PyDialogFindReplace
@@ -58,34 +61,17 @@ class TableView(QTableView):
         # print(event.text())
         # print(event.key())
         # print(event.type())
-        if event.key() == Qt.Key_Up:
-            # self.selectRow(self.currentIndex().row() - 1)
-            index = self.moveCursor(
-                QtWidgets.QAbstractItemView.MoveUp, QtCore.Qt.NoModifier
-            )
-            command = self.selectionCommand(self.currentIndex(), event)
-            self.selectionModel().setCurrentIndex(index, command)
 
-        # elif event.key() == Qt.S:
-        # 	self.selectRow(self.currentIndex().row() + 1)
 
-        elif event.key() == Qt.Key_Down:
-            # self.selectRow(self.currentIndex().row() + 1)
-            index = self.moveCursor(
-                QtWidgets.QAbstractItemView.MoveDown, QtCore.Qt.NoModifier
-            )
-            command = self.selectionCommand(self.currentIndex(), event)
-            self.selectionModel().setCurrentIndex(index, command)
-
-        elif event.type() == QEvent.KeyPress and (event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter):
+        if event.type() == QEvent.KeyPress and (event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter):
             if self.state() != QAbstractItemView.EditingState:
                 self.edit(self.currentIndex())
 
-
-        elif event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Space:
-            # print('dddđ')
-            self.manage_thread_pool.resultChanged.emit(PLAY_VIDEO_AGAIN, PLAY_VIDEO_AGAIN,
-                                                       self.currentIndex().row() + 1)
+        #
+        # elif event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Space:
+        #     # print('dddđ')
+        #     self.manage_thread_pool.resultChanged.emit(PLAY_VIDEO_AGAIN, PLAY_VIDEO_AGAIN,
+        #                                                self.currentIndex().row() + 1)
 
         elif event.modifiers() & Qt.ControlModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_F:
             self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_FIND_REPLACE, ACTION_PRESS_FIND_REPLACE, "")
@@ -103,14 +89,39 @@ class TableView(QTableView):
             self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_DELETE, ACTION_PRESS_DELETE, "")
 
         elif event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Delete:
-            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_DELETE, ACTION_PRESS_DELETE, "")
+            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_DELETE_ITEM, ACTION_PRESS_DELETE_ITEM, "")
 
-        elif event.modifiers() & Qt.ControlModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_M:
-            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_GOP_SUB, ACTION_PRESS_GOP_SUB, "")
+        elif event.modifiers() & Qt.KeyboardModifier.ShiftModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Up:
+            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_ADD_ROW_UP, ACTION_PRESS_ADD_ROW_UP, "")
 
-        elif event.modifiers() & Qt.ControlModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_X:
-            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_TACH_SUB, ACTION_PRESS_TACH_SUB, "")
+        elif event.modifiers() & Qt.KeyboardModifier.ShiftModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Down:
+            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_ADD_ROW_DOWN, ACTION_PRESS_ADD_ROW_DOWN, "")
 
+        elif event.modifiers() & Qt.ControlModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Up:
+            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_MOVE_UP, ACTION_PRESS_MOVE_UP, "")
+
+        elif event.modifiers() & Qt.ControlModifier and event.type() == QEvent.KeyPress and event.key() == Qt.Key.Key_Down:
+            self.manage_thread_pool.resultChanged.emit(ACTION_PRESS_MOVE_DOWN, ACTION_PRESS_MOVE_DOWN, "")
+
+        elif event.key() == Qt.Key_Up:
+            # self.selectRow(self.currentIndex().row() - 1)
+            index = self.moveCursor(
+                QtWidgets.QAbstractItemView.MoveUp, QtCore.Qt.NoModifier
+            )
+            # print(index)
+            command = self.selectionCommand(self.currentIndex(), event)
+            self.selectionModel().setCurrentIndex(index, command)
+
+        # elif event.key() == Qt.S:
+        # 	self.selectRow(self.currentIndex().row() + 1)
+
+        elif event.key() == Qt.Key_Down:
+            # self.selectRow(self.currentIndex().row() + 1)
+            index = self.moveCursor(
+                QtWidgets.QAbstractItemView.MoveDown, QtCore.Qt.NoModifier
+            )
+            command = self.selectionCommand(self.currentIndex(), event)
+            self.selectionModel().setCurrentIndex(index, command)
         # elif event.type() == QEvent.KeyPress and event.key() == Qt.Key.:
         # 	# print('dddđ')
         # 	self.manage_thread_pool.resultChanged.emit(PLAY_VIDEO_AGAIN, PLAY_VIDEO_AGAIN, self.currentIndex().row()+1)
@@ -186,15 +197,27 @@ class TableTimelineEditSub(QWidget):
 
         self.menu.addAction("Dịch Lại", self.signal_translate_again, shortcut=QKeySequence(Qt.CTRL | Qt.Key_T))
         self.menu.addAction("Tách Chữ Lại", self.signal_ocr_again, shortcut=QKeySequence(Qt.CTRL | Qt.Key_E))
-        self.menu.addAction("Xóa", self.signal_remove, shortcut=QKeySequence(Qt.CTRL | Qt.Key_D))
+
+        self.menu.addAction("Chèn 1 Dòng Bên Trên", lambda: self.signal_add_row_up('up'),
+                            shortcut=QKeySequence(Qt.SHIFT | Qt.Key.Key_Up))
+        self.menu.addAction("Chèn 1 Dòng Bên Dưới", lambda: self.signal_add_row_up('down'),
+                            shortcut=QKeySequence(Qt.SHIFT | Qt.Key.Key_Down))
+
+        self.menu.addAction("Di Chuyển Lên Trên", lambda: self.signal_move('up'),
+                            shortcut=QKeySequence(Qt.CTRL | Qt.Key.Key_Up))
+        self.menu.addAction("Di Chuyển Xuống Dưới", lambda: self.signal_move('down'),
+                            shortcut=QKeySequence(Qt.CTRL | Qt.Key.Key_Down))
+
+        self.menu.addAction("Xóa Ô Lẻ", self.signal_remove_item, shortcut=Qt.Key.Key_Delete)
+        self.menu.addAction("Xóa Cả Dòng", self.signal_remove_line, shortcut=QKeySequence(Qt.CTRL | Qt.Key_D))
         self.menu.addAction("Rút Gọn Nội Dung", self.signal_summary, shortcut=QKeySequence(Qt.CTRL | Qt.Key_R))
 
         self.menu.addAction("Find And Replace", self.signal_find_replace,
                             shortcut=QKeySequence(Qt.CTRL | Qt.Key_F))  # (QAction('test'))
-        self.menu.addAction("Gộp Lại Sub", self.signal_concat_sub,
-                            shortcut=QKeySequence(Qt.CTRL | Qt.Key_M))  # (QAction('test'))
-        self.menu.addAction("Tách Sub Thành Nhiều Dòng", self.signal_split_sub,
-                            shortcut=QKeySequence(Qt.CTRL | Qt.Key_X))  # (QAction('test'))
+        # self.menu.addAction("Gộp Lại Sub", self.signal_concat_sub,
+        #                     shortcut=QKeySequence(Qt.CTRL | Qt.Key_M))  # (QAction('test'))
+        # self.menu.addAction("Tách Sub Thành Nhiều Dòng", self.signal_split_sub,
+        #                     shortcut=QKeySequence(Qt.CTRL | Qt.Key_X))  # (QAction('test'))
 
     def signal_find_replace(self):
         # print(self.getDataSub())
@@ -424,26 +447,147 @@ class TableTimelineEditSub(QWidget):
                                                    UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED, "")
 
     # self.timer = QTimer()  # thực hiện việc gi đó sau khoảng thời gian
-    def signal_remove(self):
+    def signal_move(self, type):
+        items_selected = self.main_table.currentIndex()
+        row, column = items_selected.row(), items_selected.column()
+        data_sub = self.getDataSub()
+        list_sort = []
+        list_origin = []
+
+        for idx, item in enumerate(data_sub):
+            image, origin, translate = item
+            if column == ColumnNumberTabEdit.column_avatar.value:
+                item_sort = [image]
+                item_ori = [origin, translate]
+            else:
+                item_sort = [origin, translate]
+                item_ori = [image]
+            list_sort.append(item_sort)
+            list_origin.append(item_ori)
+
+        if type == 'up':
+            index = row - 1
+            index_old = self.main_table.moveCursor(
+                QtWidgets.QAbstractItemView.MoveUp, QtCore.Qt.NoModifier
+            )
+            if index < 0:
+                return
+        else:
+            index = row + 1
+            index_old = self.main_table.moveCursor(
+                QtWidgets.QAbstractItemView.MoveDown, QtCore.Qt.NoModifier
+            )
+            if index > len(data_sub):
+                return
+        command = self.main_table.selectionCommand(self.main_table.currentIndex())
+
+        element = list_sort.pop(row)
+        list_sort.insert(index, element)
+
+        if len(list_sort) == len(list_origin):
+            list_new = []
+            for a, b in zip(list_sort, list_origin):
+
+                if column == ColumnNumberTabEdit.column_avatar.value:
+                    list_new.append(a + b)
+                else:
+                    list_new.append(b + a)
+            # print(list_new)
+            self.model.update_data = list_new
+            # self.main_table.selectRow(index)
+            # index_ =self.model.index(index,1)
+            # print(index_old)
+            self.main_table.selectionModel().setCurrentIndex(index_old,command)
+
+            self.manage_thread_pool.resultChanged.emit(UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED,
+                                                       UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED, "")
+
+    def signal_add_row_up(self, type):
+        items_selected = self.main_table.currentIndex()
+        row, column = items_selected.row(), items_selected.column()
+        list_new = self.getDataSub()
+        if type == 'up':
+            index =row
+            list_new.insert(index, ['', '', ''])
+            # index_old = self.model.index(index,co)
+        else:
+            index =row + 1
+
+            list_new.insert(index, ['', '', ''])
+            # index_old = self.main_table.moveCursor(
+            #     QtWidgets.QAbstractItemView.MoveDown, QtCore.Qt.NoModifier
+            # )
+        command = self.main_table.selectionCommand(items_selected)
+
+        self.model.update_data = list_new
+        # self.self
+
+        self.manage_thread_pool.resultChanged.emit(UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED,
+                                                   UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED, "")
+
+        self.main_table.selectionModel().setCurrentIndex(items_selected, command)
+
+    def signal_remove_item(self):
+        items_selected = self.main_table.currentIndex()
+        row, column = items_selected.row(), items_selected.column()
+        data_sub = self.getDataSub()
+        list_delete = []
+        list_origin = []
+        number_del = 0
+        item_add = [['']]
+        for idx, item in enumerate(data_sub):
+            image, origin, translate = item
+            if column == ColumnNumberTabEdit.column_avatar.value:
+                item_del = [image]
+                item_ori = [origin, translate]
+                item_add = [['']]
+            else:
+                item_del = [origin, translate]
+                item_ori = [image]
+                item_add = [['', '']]
+            if row == idx:
+                number_del += 1
+            else:
+                list_delete.append(item_del)
+            list_origin.append(item_ori)
+        list_delete = list_delete + item_add * number_del
+        if len(list_delete) == len(list_origin):
+            list_new = []
+            for a, b in zip(list_delete, list_origin):
+
+                if column == ColumnNumberTabEdit.column_avatar.value:
+                    list_new.append(a + b)
+                else:
+                    list_new.append(b + a)
+            # print(list_new)
+
+            self.model.update_data = list_new
+            self.selectRowDown()
+            self.main_table.selectRow(row)
+
+            self.manage_thread_pool.resultChanged.emit(UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED,
+                                                       UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED, "")
+
+    def signal_remove_line(self):
         items_selected = self.main_table.selectionModel().selectedRows()
         if len(items_selected) < 1:
             return PyMessageBox().show_warning('WARNING', "Please select the line you want to delete")
 
-        req = PyMessageBox().show_question("CONFIRM", "Are you sure you want to delete ?")
+        # req = PyMessageBox().show_question("CONFIRM", "Are you sure you want to delete ?")
         row_start = items_selected[0].row()
 
-        if req is True:
-            row_pre = 0
-            for index, item in enumerate(items_selected):
-                if not index == 0:
-                    if not (item.row() - row_pre) == 1:
-                        return PyMessageBox().show_warning('WARNING', "Chỉ được xóa các hàng liền nhau")
-                row_pre = item.row()
+        # if req is True:
+        row_pre = 0
+        for index, item in enumerate(items_selected):
+            if not index == 0:
+                if not (item.row() - row_pre) == 1:
+                    return PyMessageBox().show_warning('WARNING', "Chỉ được xóa các hàng liền nhau")
+            row_pre = item.row()
 
-            # for index, item in enumerate(items_selected):
-            self.model.removeRows(items_selected[0].row(), len(items_selected))
-        else:
-            return
+        # for index, item in enumerate(items_selected):
+        self.model.removeRows(items_selected[0].row(), len(items_selected))
+        # else:
+        #     return
         self.selectRowDown()
         self.main_table.selectRow(row_start)
 
@@ -453,8 +597,8 @@ class TableTimelineEditSub(QWidget):
     def signal_ocr_again(self):
         self.listRowOCRPart = []
         self.list_row_trans_chunk = []
-        self.count_result_trans = 0
-        self.isTranslating = False
+        self.count_result_ocr = 0
+        self.isOCRing = False
 
         items_selected = self.main_table.selectionModel().selectedRows()
         if len(items_selected) < 1:
@@ -513,7 +657,7 @@ class TableTimelineEditSub(QWidget):
     def setup_table(self):
         # ========== Cài đặt cho table============
         data = [["", "", ""]]
-        name_column = ["Time", "Original", "Translation"]
+        name_column = ["Name File", "Original", "Translation"]
         self.model = TableEditModel(data, name_column)
         self.main_table.setModel(self.model)
         # self.main_table.setItemDelegateForColumn(ColumnNumberTabEdit.column_original.value,PlainTextDelegate())
@@ -521,9 +665,9 @@ class TableTimelineEditSub(QWidget):
         self.main_table.setAlternatingRowColors(True)  # hiện màu dòng xen kẽ
 
         self.main_table.horizontalHeader().setStretchLastSection(True)  # cái này cho kéo dãn full table
-        # self.main_table.horizontalHeader().setDefaultSectionSize(126)
-        self.main_table.horizontalHeader().setMinimumSectionSize(126)
-        self.main_table.verticalHeader().setDefaultSectionSize(100)
+        self.main_table.horizontalHeader().setMinimumSectionSize(37)
+        self.main_table.verticalHeader().setDefaultSectionSize(45)
+        # self.main_table.verticalHeader().setDefaultSectionSize(100)
         # self.main_table.verticalHeader().setMinimumHeight(100)
         # self.main_table.verticalHeader().resizeSection(row, height)
         # self.main_table.verticalHeader().setSectionResizeMode(
@@ -558,14 +702,26 @@ class TableTimelineEditSub(QWidget):
     def setup_connections(self):
         ##==================Các sự kiện của table ========
 
-        # self.main_table.doubleClicked.connect(self.cellDoubleClicked)  # nhận đc row và colum
-        # self.main_table.itemDoubleClicked.connect(self.itemDoubleClicked)  # nhận đc item
+        self.main_table.doubleClicked.connect(self.cellDoubleClicked)  # nhận đc row và colum
+        # self.main_table.doubleClicked.
         # self.main_table.itemChanged.connect(self.itemDataChanged)  # nh# nhận đc item
         self.model.dataChanged.connect(self.itemDataChanged)
         self.model.layoutChanged.connect(self.itemLayoutChanged)
         self.main_table.selectionModel().selectionChanged.connect(self._rowSelectionChanged)  # nhận đc item
 
         self.manage_thread_pool.resultChanged.connect(self.resultThreadChanged)
+
+    def cellDoubleClicked(self, item: QModelIndex):
+        if item.column() == ColumnNumberTabEdit.column_avatar.value:
+            row = item.row()
+            path_file, _ = QFileDialog.getOpenFileName(self, caption='Chọn file hình ảnh',
+                                                       filter='File Ảnh (*.png *.jpg *jpeg)')
+
+            if os.path.exists(path_file):
+                self.setValueItem(row, ColumnNumberTabEdit.column_avatar.value, path_file)
+                self.manage_thread_pool.resultChanged.emit(ROW_SELECTION_CHANGED_TABLE_EDIT_SUB,
+                                                           ROW_SELECTION_CHANGED_TABLE_EDIT_SUB,
+                                                           self.main_table.currentIndex().row() + 1)
 
     def selectListRow(self, list_row):
         selection = QItemSelection()
@@ -646,7 +802,8 @@ class TableTimelineEditSub(QWidget):
         if typeThread == UPDATE_CONTENT_EDIT_BINDING:
             text_or, text_tr = result
             self.setValueItem(self.main_table.currentIndex().row(), ColumnNumberTabEdit.column_original.value, text_or)
-            self.setValueItem(self.main_table.currentIndex().row(), ColumnNumberTabEdit.column_translated.value, text_tr)
+            self.setValueItem(self.main_table.currentIndex().row(), ColumnNumberTabEdit.column_translated.value,
+                              text_tr)
 
         if typeThread == ACTION_PRESS_PREVIOUS_LINE_SUB:
             self.selectRowUp()
@@ -655,8 +812,27 @@ class TableTimelineEditSub(QWidget):
 
         if typeThread == ACTION_PRESS_RUT_GON_NOI_DUNG:
             self.signal_summary()
+
         if typeThread == ACTION_PRESS_DELETE:
-            self.signal_remove()
+            self.signal_remove_line()
+
+        if typeThread == ACTION_PRESS_DELETE_ITEM:
+            self.signal_remove_item()
+
+        if typeThread == ACTION_PRESS_MOVE_UP:
+            self.signal_move('up')
+
+        if typeThread == ACTION_PRESS_MOVE_DOWN:
+
+            self.signal_move('down')
+
+        if typeThread == ACTION_PRESS_ADD_ROW_UP:
+
+            self.signal_add_row_up('up')
+
+        if typeThread == ACTION_PRESS_ADD_ROW_DOWN:
+
+            self.signal_add_row_up('down')
 
         if typeThread == ACTION_PRESS_OCR_AGAIN:
             self.signal_ocr_again()
@@ -734,6 +910,7 @@ class TableTimelineEditSub(QWidget):
                 self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, False)
                 self.manage_thread_pool.resultChanged.emit(OCR_TEXT_FINISHED,
                                                            OCR_TEXT_FINISHED, None)
+
                 self.refresh()
         if typeThread == DETECT_IMAGE_TO_TEXT_PART and not result is None:
 
@@ -776,7 +953,8 @@ class TableTimelineEditSub(QWidget):
                 self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, False)
                 self.manage_thread_pool.resultChanged.emit(OCR_TEXT_FINISHED,
                                                            OCR_TEXT_FINISHED, None)
-                print('qua')
+
+                # print('qua')
                 self.refresh()
 
         if typeThread == RESULT_TRANSLATE_SUB_EXTRACT and not result is None:
@@ -863,7 +1041,7 @@ class TableTimelineEditSub(QWidget):
                 self.manage_thread_pool.resultChanged.emit(TOGGLE_SPINNER, TOGGLE_SPINNER, False)
                 self.manage_thread_pool.resultChanged.emit(TRANSLATE_SUB_EXTRACT_FINISHED,
                                                            TRANSLATE_SUB_EXTRACT_FINISHED, None)
-                print('qua')
+                # print('qua')
                 self.refresh()
 
         if typeThread == LOAD_SUB_TRANSLATE_TXT_TABLE_EXTRACT:
@@ -951,6 +1129,16 @@ class TableTimelineEditSub(QWidget):
                                                            TRANSLATE_SUB_EXTRACT_FINISHED, None)
                 self.refresh()
 
+        if typeThread == LOAD_TXT_TABLE_EDIT:
+            data_list = []
+            for index, sub in enumerate(result):
+                # self.setValueItem(index, ColumnNumber.column_sub_translate.value, sub)
+                data_list.append((index, ColumnNumberTabEdit.column_original.value, sub))
+
+            # self.thread_limit_update.submit(self.model.update_list_item, data_list)
+            self.model.update_list_item(data_list)
+            self.refresh()
+
     def getValueItem(self, row, column):
         return self.model.data(self.model.index(row, column))
 
@@ -961,7 +1149,9 @@ class TableTimelineEditSub(QWidget):
         # print("Refreshing")
         self.manage_thread_pool.resultChanged.emit(UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED,
                                                    UPDATE_TABLE_TIMELINE_TEXT_SUB_CHANGED, "")
-
+        self.manage_thread_pool.resultChanged.emit(ROW_SELECTION_CHANGED_TABLE_EDIT_SUB,
+                                                   ROW_SELECTION_CHANGED_TABLE_EDIT_SUB,
+                                                   self.main_table.currentIndex().row() + 1)
         self.model.layoutChanged.emit()
 
     def loadDataConfigCurrent(self, configCurrent):
@@ -1020,6 +1210,7 @@ class TableTimelineEditSub(QWidget):
     def resetDataColumn(self, col):
         """["Time", Origin", "Trans"]"""
         self.count_result_trans = 0
+        self.count_result_ocr = 0
         self.isTranslating = False
         self.isOCRing = False
         self.list_row_trans_chunk = []

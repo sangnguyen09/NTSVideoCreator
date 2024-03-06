@@ -481,10 +481,7 @@ class GroupBoxShowScreenTabDetectSub(QWidget):
 		if typeThread == ROW_SELECTION_CHANGED_TABLE_EXTRACT:
 			if self.is_load_file_local is False:
 				self.slider_change_frame.setValue(result)
-		
-		# if typeThread == LOAD_VIDEO_FROM_FILE_SRT_EXTRACT:
-		# 	self.loadDataFrameVideo(**result)
-		# print(typeThread)
+
 		if typeThread == SELECTION_AREA_SUB_CHANGED:
 			if self.is_load_file_local is True:
 				if hasattr(self, "path_file") and self.is_loaded is False:

@@ -266,12 +266,17 @@ class GroupBoxShowScreenTabEditSub(QWidget):
 				# self.sequence_current = self.groupbox_timeline.getDataRow(line_number - 1)
 				cau_hinh_edit: dict = json.loads(self.fileSRTCurrent.value)
 				item_current = cau_hinh_edit.get('data_table',[])[line_number-1]
-				pixmap = QPixmap(item_current[0])
-				frame_width = pixmap.width()
-				frame_height = pixmap.height()
-				self.viewer.setFrameVideo(pixmap,frame_width, frame_height)
+				file_image = item_current[0]
+				# print(file_image)
+				if file_image != '' and os.path.exists(file_image):
+					pixmap = QPixmap(file_image)
+					frame_width = pixmap.width()
+					frame_height = pixmap.height()
+					# print(frame_height)
+					# print(frame_width)
+					self.viewer.setFrameVideo(pixmap,frame_width, frame_height)
 
-				self.is_loaded =True
+					self.is_loaded =True
 	# self.loadSubText()
 	
 	# self.is_loaded = False

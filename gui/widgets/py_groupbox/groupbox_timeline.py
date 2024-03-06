@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QGroupBox
 
-from gui.widgets.py_table_widget.table_timeline import TableTimeline
+from gui.widgets.py_table_widget.table_timeline_add_sub import TableTimelineAddSub
 
 
 class GroupBoxTimeLine(QWidget):
@@ -18,7 +18,7 @@ class GroupBoxTimeLine(QWidget):
 
     def create_widgets(self):
 
-        self.table_timeline = TableTimeline()
+        self.table_timeline = TableTimelineAddSub()
 
 
     def modify_widgets(self):

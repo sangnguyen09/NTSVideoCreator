@@ -16,7 +16,7 @@ from style import style, icon_logo, mytheme
 
 if __name__ == "__main__":
 	
-	app = QtSingleApplication('82A6DB9245A2-F3FF80BA-BA05-4277-8063', sys.argv)
+	app = QtSingleApplication('82A6DB9245A2-F3FF80BA-BA05-4277-8063_NTSVIDEO_CREATOR', sys.argv)
 	# print(app.isRunning())
 	if app.isRunning():
 		sys.exit(0)
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 	
 	# stylesheet = app.styleSheet()
 	# app.setStyleSheet(stylesheet + style.format(**os.environ))
-	
+
 	_print = print  # keep a local copy of the original print
 	# print( 'self' in sys._getframe(1).f_locals.keys())
 	#            f"{sys._getframe().f_back.f_lineno} {' - ' + sys._getframe(1).f_locals['self'].__class__.__name__ + ' - ' + sys._getframe().f_back.f_code.co_name} \n",

@@ -68,6 +68,7 @@ class PyTabShop(QWidget):
 		dataReq = {
 			"cp": cr_pc(),
 			"tc": TOOL_CODE_MAIN,
+			"list_key": ['tts','translate', 'gia_han_' +TOOL_CODE_MAIN],
 			't': int(float(time.time())),
 		}
 		headers = {
@@ -390,10 +391,10 @@ class PyTabShop(QWidget):
 			
 			key_price = f'{self.COMBO_SERVER_TTS.get(self.combobox_server_tts.currentText())}_{self.COMBO_GOI_TTS.get(self.combobox_goi_tts.currentText())}'
 			
-			if 'unlimited' in key_price.lower():
-				price_buy = self.data_info.get('price').get(key_price) * self.data_info.get('info_user').get('num_pc')
-			else:
-				price_buy = self.data_info.get('price').get(key_price) * self.input_sl_voice.value()
+			# if 'unlimited' in key_price.lower():
+			# 	price_buy = self.data_info.get('price').get(key_price) * self.data_info.get('info_user').get('num_pc')
+			# else:
+			price_buy = self.data_info.get('price').get(key_price) * self.input_sl_voice.value()
 		
 		elif type_buy == 'mua_token':
 			dataReq.update({
@@ -402,10 +403,10 @@ class PyTabShop(QWidget):
 			name_product = self.combobox_server_translate.currentText() + ": " + self.combobox_goi_translate.currentText() + f" - Số lượng: {self.input_sl_trans.value()} - " + str(self.data_info.get('info_user').get('num_pc')) + " PC"
 			key_price = f'{self.COMBO_SERVER_TRANSLATE.get(self.combobox_server_translate.currentText())}_{self.COMBO_GOI_TRANSLATE.get(self.combobox_goi_translate.currentText())}'
 			
-			if 'unlimited' in key_price.lower():
-				price_buy = self.data_info.get('price').get(key_price) * self.data_info.get('info_user').get('num_pc')
-			else:
-				price_buy = self.data_info.get('price').get(key_price) * self.input_sl_trans.value()
+			# if 'unlimited' in key_price.lower():
+			# 	price_buy = self.data_info.get('price').get(key_price) * self.data_info.get('info_user').get('num_pc')
+			# else:
+			price_buy = self.data_info.get('price').get(key_price) * self.input_sl_trans.value()
 		
 		else:
 			return PyMessageBox().show_warning('Cảnh Báo', "Lỗi Dữ Liệu")
@@ -663,18 +664,18 @@ class PyTabShop(QWidget):
 				
 				key_price = f'{self.COMBO_SERVER_TTS.get(self.combobox_server_tts.currentText())}_{self.COMBO_GOI_TTS.get(self.combobox_goi_tts.currentText())}'
 				
-				if 'unlimited' in key_price.lower():
-					price = self.data_info.get('price').get(key_price) * self.data_info.get('info_user').get('num_pc')
-				else:
-					price = self.data_info.get('price').get(key_price) * self.input_sl_voice.value()
+				# if 'unlimited' in key_price.lower():
+				# 	price = self.data_info.get('price').get(key_price) * self.data_info.get('info_user').get('num_pc')
+				# else:
+				price = self.data_info.get('price').get(key_price) * self.input_sl_voice.value()
 				
 				self.lb_gia_tien_tts.setText(f"""<p style="font-size:14px; font-weight:bold; color: #f81919;">{'{:,}'.format(price)} Xu</p>""")
 				
 				key_price = f'{self.COMBO_SERVER_TRANSLATE.get(self.combobox_server_translate.currentText())}_{self.COMBO_GOI_TRANSLATE.get(self.combobox_goi_translate.currentText())}'
-				if 'unlimited' in key_price.lower():
-					price = self.data_info.get('price').get(key_price) * self.data_info.get('info_user').get('num_pc')
-				else:
-					price = self.data_info.get('price').get(key_price) * self.input_sl_trans.value()
+				# if 'unlimited' in key_price.lower():
+				# 	price = self.data_info.get('price').get(key_price) * self.data_info.get('info_user').get('num_pc')
+				# else:
+				price = self.data_info.get('price').get(key_price) * self.input_sl_trans.value()
 				self.lb_gia_tien_translate.setText(f"""<p style="font-size:14px; font-weight:bold; color: #f81919;">{'{:,}'.format(price)} Xu</p>""")
 			except:
 				pass
@@ -692,11 +693,11 @@ class PyTabShop(QWidget):
 		self.lb_token_chatgpt.setText(f"""Token ChatGPT: <p style="font-size:15px; font-weight:bold; color: #f81919;">{data_info.get('info_user').get('token_chatgpt') if isinstance(data_info.get('info_user').get('token_chatgpt'), str) else '{:,}'.format(data_info.get('info_user').get('token_chatgpt'))}</p>""")
 		self.lb_token_translate_pro1.setText(f"""Token Translate Pro: <p style="font-size:15px; font-weight:bold; color: #f81919;">{data_info.get('info_user').get('token_translate_pro1') if isinstance(data_info.get('info_user').get('token_translate_pro1'), str) else '{:,}'.format(data_info.get('info_user').get('token_translate_pro1'))}</p>""")
 		
-		self.COMBO_CHUC_NANG = data_info.get('gia_han').get('chuc_nang')
+		self.COMBO_CHUC_NANG = data_info.get('gia_han_videocreator').get('chuc_nang')
 		self.combobox_chuc_nang.clear()
 		self.combobox_chuc_nang.addItems(list(self.COMBO_CHUC_NANG.keys()))
 		
-		self.COMBO_THOI_HAN = data_info.get('gia_han').get('thoi_han')
+		self.COMBO_THOI_HAN = data_info.get('gia_han_videocreator').get('thoi_han')
 		self.combobox_thoi_han.clear()
 		self.combobox_thoi_han.addItems(list(self.COMBO_THOI_HAN.keys()))
 		
